@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhuxi.server.mapper.UserAddressMapper">
+    
+    <!-- 根据条件查询地址列表 -->
+    <select id="selectByCondition" parameterType="com.zhuxi.pojo.entity.UserAddress" resultType="com.zhuxi.pojo.entity.UserAddress">
+        SELECT * FROM user_address
+        <where>
+            <if test="userId != null">
+                AND user_id = #{userId}
+            </if>
+            <if test="consignee != null and consignee != ''">
+                AND consignee LIKE CONCAT('%', #{consignee}, '%')
+            </if>
+            <if test="phone != null and phone != ''">
+                AND phone = #{phone}
+            </if>
+            <if test="provinceName != null and provinceName != ''">
+                AND province_name LIKE CONCAT('%', #{provinceName}, '%')
+            </if>
+            <if test="cityName != null and cityName != ''">
+                AND city_name LIKE CONCAT('%', #{cityName}, '%')
+            </if>
+            <if test="districtName != null and districtName != ''">
+                AND district_name LIKE CONCAT('%', #{districtName}, '%')
+            </if>
+            <if test="isDefault != null">
+                AND is_default = #{isDefault}
+            </if>
+        </where>
+        ORDER BY is_default DESC, created_at DESC
+    </select>
+    
+</mapper>

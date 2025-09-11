@@ -1,0 +1,13 @@
+package com.zhuxi.common.properties;
+
+
+import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
+
+@ConfigurationProperties(prefix = "bcrypt")
+@Data
+@Component
+public class BCryptProperties {
+    private int strength;
+}

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhuxi.server.mapper.ProductStaticMapper">
+    
+    <!-- 根据条件查询商品图片列表 -->
+    <select id="selectByCondition" parameterType="com.zhuxi.pojo.entity.ProductStatic" resultType="com.zhuxi.pojo.entity.ProductStatic">
+        SELECT * FROM product_static
+        <where>
+            <if test="productId != null">
+                AND product_id = #{productId}
+            </if>
+            <if test="skuId != null">
+                AND sku_id = #{skuId}
+            </if>
+            <if test="imageType != null">
+                AND image_type = #{imageType}
+            </if>
+        </where>
+        ORDER BY sort_order ASC, created_at ASC
+    </select>
+    
+</mapper>

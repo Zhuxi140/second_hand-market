@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhuxi.server.mapper.ChatMapper">
+    
+    <!-- 根据条件查询聊天记录列表 -->
+    <select id="selectByCondition" parameterType="com.zhuxi.pojo.entity.Chat" resultType="com.zhuxi.pojo.entity.Chat">
+        SELECT * FROM chat
+        <where>
+            <if test="conversationId != null and conversationId != ''">
+                AND conversation_id = #{conversationId}
+            </if>
+            <if test="senderId != null">
+                AND sender_id = #{senderId}
+            </if>
+            <if test="receiverId != null">
+                AND receiver_id = #{receiverId}
+            </if>
+            <if test="isRead != null">
+                AND is_read = #{isRead}
+            </if>
+            <if test="content != null and content != ''">
+                AND content LIKE CONCAT('%', #{content}, '%')
+            </if>
+        </where>
+        ORDER BY sent_at ASC
+    </select>
+    
+</mapper>
