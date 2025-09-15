@@ -6,6 +6,8 @@
     <select id="selectByCondition" parameterType="com.zhuxi.pojo.entity.ProductSpec" resultType="com.zhuxi.pojo.entity.ProductSpec">
         SELECT * FROM product_spec
         <where>
+        <![CDATA[
+
             <if test="productId != null">
                 AND product_id = #{productId}
             </if>
@@ -27,6 +29,7 @@
             <if test="maxStock != null">
                 AND stock <= #{maxStock}
             </if>
+        ]]>
         </where>
         ORDER BY updated_at DESC
     </select>

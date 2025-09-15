@@ -78,3 +78,4 @@ public class ProductSpecServiceImpl implements ProductSpecService {
         return productSpecMapperHelper.selectByCondition(productSpec);
     }
 }
+

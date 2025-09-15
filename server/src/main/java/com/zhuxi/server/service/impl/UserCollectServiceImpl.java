@@ -94,3 +94,4 @@ public class UserCollectServiceImpl implements UserCollectService {
         return userCollectMapperHelper.selectByCondition(userCollect);
     }
 }
+

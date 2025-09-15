@@ -51,3 +51,4 @@ public class ProductStaticController {
         return Result.success(productStatics);
     }
 }
+

@@ -56,3 +56,4 @@ public interface UserCollectService {
      */
     List<UserCollect> selectByCondition(UserCollect userCollect);
 }
+

@@ -41,3 +41,4 @@ public interface ProductSortService {
      */
     List<ProductSort> selectByCondition(ProductSort productSort);
 }
+

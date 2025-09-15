@@ -1,15 +1,22 @@
 package com.zhuxi.server.controller;
 
 import com.zhuxi.common.result.Result;
+import com.zhuxi.pojo.DTO.User.UserLoginDTO;
+import com.zhuxi.pojo.DTO.User.UserRegisterDTO;
+import com.zhuxi.pojo.DTO.User.UserUpdatePwDTO;
+import com.zhuxi.pojo.VO.User.UserLoginVO;
+import com.zhuxi.pojo.VO.User.UserRegisterVO;
+import com.zhuxi.pojo.VO.User.UserViewVO;
 import com.zhuxi.pojo.entity.User;
 import com.zhuxi.server.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/user")
 @CrossOrigin(origins = "*")
 public class UserController {
     
@@ -17,18 +24,38 @@ public class UserController {
     private UserService userService;
     
     // 插入用户
-    @PostMapping("/insert")
-    public Result<String> insert(@RequestBody User user) {
-        int result = userService.insert(user);
-        return result > 0 ? Result.success("插入成功") : Result.fail("插入失败");
+    @PostMapping("/register")
+    public Result<UserRegisterVO> register(@RequestBody(required = true) @Valid UserRegisterDTO user) {
+        return userService.register(user);
     }
-    
-    // 根据ID删除用户
-    @DeleteMapping("/delete/{id}")
-    public Result<String> deleteById(@PathVariable Long id) {
-        int result = userService.deleteById(id);
-        return result > 0 ? Result.success("删除成功") : Result.fail("删除失败");
+
+    // 登录
+    @PostMapping("/login")
+    public Result<UserLoginVO> login(@RequestBody @Valid UserLoginDTO login){
+        return userService.login(login);
     }
+
+    // 登出
+    @PostMapping("/logout")
+    public Result<String> logout() {
+        return userService.logout();
+    }
+
+    // 获取用户信息
+    @GetMapping("/getInfo/{userSn}")
+    public Result<UserViewVO> getUserInfo(@PathVariable String userSn) {
+        return userService.getUserInfo(userSn);
+    }
+
+    // 更新密码
+    @PutMapping("/{userSn}/password")
+    public Result<String> updatePassword(
+            @RequestBody @Valid UserUpdatePwDTO updatePw,
+            @PathVariable String userSn
+    ){
+        return userService.updatePassword(updatePw, userSn);
+    }
+
     
     // 更新用户
     @PutMapping("/update")
@@ -36,25 +63,5 @@ public class UserController {
         int result = userService.update(user);
         return result > 0 ? Result.success("更新成功") : Result.fail("更新失败");
     }
-    
-    // 根据ID查询用户
-    @GetMapping("/get/{id}")
-    public Result<User> selectById(@PathVariable Long id) {
-        User user = userService.selectById(id);
-        return user != null ? Result.success(user) : Result.fail("用户不存在");
-    }
-    
-    // 根据用户名查询用户
-    @GetMapping("/getByUsername/{username}")
-    public Result<User> selectByUsername(@PathVariable String username) {
-        User user = userService.selectByUsername(username);
-        return user != null ? Result.success(user) : Result.fail("用户不存在");
-    }
-    
-    // 查询所有用户
-    @GetMapping("/getAll")
-    public Result<List<User>> selectAll() {
-        List<User> users = userService.selectAll();
-        return Result.success(users);
-    }
+
 }

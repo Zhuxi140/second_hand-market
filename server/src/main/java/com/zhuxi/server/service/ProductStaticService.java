@@ -46,3 +46,4 @@ public interface ProductStaticService {
      */
     List<ProductStatic> selectByCondition(ProductStatic productStatic);
 }
+

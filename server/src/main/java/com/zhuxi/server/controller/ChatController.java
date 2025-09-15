@@ -51,3 +51,4 @@ public class ChatController {
         return Result.success(chats);
     }
 }
+

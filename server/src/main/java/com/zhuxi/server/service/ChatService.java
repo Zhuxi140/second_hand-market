@@ -51,3 +51,4 @@ public interface ChatService {
      */
     List<Chat> selectByCondition(Chat chat);
 }
+

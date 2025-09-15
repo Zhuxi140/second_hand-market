@@ -6,6 +6,7 @@
     <select id="selectByCondition" parameterType="com.zhuxi.pojo.entity.UserOrder" resultType="com.zhuxi.pojo.entity.UserOrder">
         SELECT * FROM user_order
         <where>
+        <![CDATA[
             <if test="orderSn != null and orderSn != ''">
                 AND orderSn LIKE CONCAT('%', #{orderSn}, '%')
             </if>
@@ -24,6 +25,7 @@
             <if test="maxAmount != null">
                 AND total_amount <= #{maxAmount}
             </if>
+        ]]>
         </where>
         ORDER BY created_at DESC
     </select>

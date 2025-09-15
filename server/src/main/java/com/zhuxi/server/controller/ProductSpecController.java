@@ -51,3 +51,4 @@ public class ProductSpecController {
         return Result.success(productSpecs);
     }
 }
+

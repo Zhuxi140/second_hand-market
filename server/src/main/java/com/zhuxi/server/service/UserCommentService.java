@@ -51,3 +51,4 @@ public interface UserCommentService {
      */
     List<UserComment> selectByCondition(UserComment userComment);
 }
+

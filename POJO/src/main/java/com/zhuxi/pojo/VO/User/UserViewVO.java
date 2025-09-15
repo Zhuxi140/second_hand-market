@@ -1,20 +1,23 @@
-package com.zhuxi.pojo.entity;
+package com.zhuxi.pojo.VO.User;
 
 import com.zhuxi.common.Enum.Role;
-import jakarta.annotation.Nonnull;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 
 @Data
-public class User {
-    private Long id;
+@NoArgsConstructor
+@AllArgsConstructor
+public class UserViewVO {
     private String userSn;
     private String username;
-    private String password;
     private String nickname;
-    private String email;
     private String phone;
+    private String email;
     private String avatar;
-    private Integer status;
     private Role role;
+    private int status;
+    private LocalDateTime createdAt;
 }

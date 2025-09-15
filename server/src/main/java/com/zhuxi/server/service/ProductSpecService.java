@@ -46,3 +46,4 @@ public interface ProductSpecService {
      */
     List<ProductSpec> selectByCondition(ProductSpec productSpec);
 }
+

@@ -78,3 +78,4 @@ public class ProductStaticServiceImpl implements ProductStaticService {
         return productStaticMapperHelper.selectByCondition(productStatic);
     }
 }
+

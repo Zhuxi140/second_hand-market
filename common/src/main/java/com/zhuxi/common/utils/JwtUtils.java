@@ -30,7 +30,7 @@ public class JwtUtils {
                 .build();
     }
 
-    public String generateAdminToken(Map<String, Object> data, int type){
+    public String generateAdminToken(Map<String, Object> data){
         return Jwts.builder()
                 .claims( data)
                 .signWith(jwtProperties.getAdminSecretKey())
@@ -40,7 +40,7 @@ public class JwtUtils {
                 .compact();
     }
 
-    public String generateUserToken(Map<String, Object> data, int type){
+    public String generateUserToken(Map<String, Object> data){
         return Jwts.builder()
                 .claims( data)
                 .signWith(jwtProperties.getUserSecretKey())

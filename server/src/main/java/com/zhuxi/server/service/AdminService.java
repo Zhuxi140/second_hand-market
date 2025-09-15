@@ -46,3 +46,4 @@ public interface AdminService {
      */
     List<Admin> selectByCondition(Admin admin);
 }
+

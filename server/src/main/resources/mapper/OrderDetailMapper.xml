@@ -4,6 +4,7 @@
     
     <!-- 根据条件查询订单明细列表 -->
     <select id="selectByCondition" parameterType="com.zhuxi.pojo.entity.OrderDetail" resultType="com.zhuxi.pojo.entity.OrderDetail">
+    <![CDATA[
         SELECT * FROM order_detail
         <where>
             <if test="orderId != null">
@@ -29,6 +30,7 @@
             </if>
         </where>
         ORDER BY created_at DESC
+    ]]>
     </select>
     
 </mapper>

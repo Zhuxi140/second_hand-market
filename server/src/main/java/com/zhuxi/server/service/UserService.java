@@ -1,31 +1,32 @@
 package com.zhuxi.server.service;
 
+import com.zhuxi.common.result.Result;
+import com.zhuxi.pojo.DTO.User.UserLoginDTO;
+import com.zhuxi.pojo.DTO.User.UserRegisterDTO;
+import com.zhuxi.pojo.DTO.User.UserUpdatePwDTO;
+import com.zhuxi.pojo.VO.User.UserLoginVO;
+import com.zhuxi.pojo.VO.User.UserRegisterVO;
+import com.zhuxi.pojo.VO.User.UserViewVO;
 import com.zhuxi.pojo.entity.User;
 
 import java.util.List;
 
 public interface UserService {
-    // 插入用户
-    int insert(User user);
+    // 注册用户
+    Result<UserRegisterVO> register(UserRegisterDTO user);
+
+    // 登录
+    Result<UserLoginVO> login(UserLoginDTO login);
     
-    // 根据ID删除用户
-    int deleteById(Long id);
-    
+    // 登出
+    Result<String> logout();
+
     // 更新用户
     int update(User user);
     
-    // 根据ID查询用户
-    User selectById(Long id);
-    
-    // 根据用户名查询用户
-    User selectByUsername(String username);
-    
-    // 根据手机号查询用户
-    User selectByPhone(String phone);
-    
-    // 查询所有用户
-    List<User> selectAll();
-    
-    // 根据条件查询用户列表
-    List<User> selectByCondition(User user);
+    // 获取用户信息
+    Result<UserViewVO> getUserInfo(String userSn);
+
+    // 修改密码
+    Result<String> updatePassword(UserUpdatePwDTO  updatePw, String userSn);
 }

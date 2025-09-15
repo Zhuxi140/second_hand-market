@@ -72,6 +72,7 @@ CREATE TABLE `order_detail` (
 DROP TABLE IF EXISTS `user_address`;
 CREATE TABLE `user_address` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `addressSn` VARCHAR(255) NOT NULL COMMENT '地址唯一标识',
   `user_id` BIGINT UNSIGNED NOT NULL COMMENT '用户id',
   `consignee` VARCHAR(50) NOT NULL COMMENT '收货人',
   `sex` VARCHAR(2) NULL DEFAULT NULL COMMENT '性别',
@@ -104,7 +105,7 @@ CREATE TABLE `product` (
   `category_id` BIGINT UNSIGNED NOT NULL COMMENT '分类id',
   `price` DECIMAL(12, 2) NOT NULL COMMENT '商品价格',
   `condition` TINYINT UNSIGNED NOT NULL COMMENT '商品成色 (1:全新,2:9成新,3:仅外观受损,4:8成新,5:非二手)',
-  `status` TINYINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '商品状态 (1在售 2已预订 3已售出)',
+  `status` TINYINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '商品状态 (1在售 2已预订 3已售出 4审核中)',
   `location` VARCHAR(50) NULL DEFAULT NULL COMMENT '商品所在地区和城市',
   `view_count` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '浏览次数',
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',

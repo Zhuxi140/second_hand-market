@@ -51,3 +51,4 @@ public class UserCollectController {
         return Result.success(userCollects);
     }
 }
+

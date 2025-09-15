@@ -78,3 +78,4 @@ public class ShopServiceImpl implements ShopService {
         return shopMapperHelper.selectByCondition(shop);
     }
 }
+

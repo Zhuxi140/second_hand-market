@@ -51,3 +51,4 @@ public interface OrderDetailService {
      */
     List<OrderDetail> selectByCondition(OrderDetail orderDetail);
 }
+

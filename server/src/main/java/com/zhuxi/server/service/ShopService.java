@@ -46,3 +46,4 @@ public interface ShopService {
      */
     List<Shop> selectByCondition(Shop shop);
 }
+
