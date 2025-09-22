@@ -2,7 +2,7 @@ package com.zhuxi.server.service.impl;
 
 import com.zhuxi.pojo.entity.ProductStatic;
 import com.zhuxi.server.helper.ProductStaticMapperHelper;
-import com.zhuxi.server.service.ProductStaticService;
+import com.zhuxi.server.service.Service.ProductStaticService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

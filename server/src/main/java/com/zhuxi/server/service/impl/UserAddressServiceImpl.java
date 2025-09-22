@@ -1,80 +1,116 @@
 package com.zhuxi.server.service.impl;
 
-import com.zhuxi.pojo.entity.UserAddress;
+import com.zhuxi.common.exception.TransactionalException;
+import com.zhuxi.common.result.Result;
+import com.zhuxi.pojo.DTO.UserAddress.UserAdsRegisterDTO;
+import com.zhuxi.pojo.DTO.UserAddress.UserAdsUpdate;
+import com.zhuxi.pojo.VO.UserAddress.UserAddressVO;
 import com.zhuxi.server.helper.UserAddressMapperHelper;
-import com.zhuxi.server.service.UserAddressService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.zhuxi.server.service.Service.UserAddressService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.lang.ref.WeakReference;
 import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 @Service
+@RequiredArgsConstructor
 public class UserAddressServiceImpl implements UserAddressService {
     
-    @Autowired
-    private UserAddressMapperHelper userAddressMapperHelper;
-    
+    private final UserAddressMapperHelper userAddressMapperHelper;
+    private final ConcurrentMap<String, WeakReference<Object>> adsLock = new ConcurrentHashMap<>();
+
+
     /**
      * 插入地址
+     *待完善:  验证jwt中userSn与参数 userSn的一致性 并发等
      */
     @Override
-    public int insert(UserAddress userAddress) {
-        return userAddressMapperHelper.insert(userAddress);
+    @Transactional(rollbackFor = TransactionalException.class)
+    public Result<String> insertAddress(UserAdsRegisterDTO address, String userSn) {
+
+        Long userId = userAddressMapperHelper.getUserId(userSn);
+        userAddressMapperHelper.checkAddressCount(userId);
+
+        // 若用户指定为默认地址，则取消其他已有的默认地址 否则设置为非默认地址
+        if (address.getIsDefault() == 1){
+            Long addressDefaultId = userAddressMapperHelper.getAddressDefaultId(userId);
+            if (addressDefaultId != null){
+                userAddressMapperHelper.cancelDefault(addressDefaultId);
+            }
+        }else{
+            address.setIsDefault(0);
+        }
+        // 生成地址唯一标识 addressSn
+        address.setAddressSn(UUID.randomUUID().toString());
+
+        address.setUserId(userId);
+        // 插入地址
+        userAddressMapperHelper.insert(address,userSn);
+        String addressSn = userAddressMapperHelper.selectAddressSnById(address.getId());
+
+        return Result.success("success",addressSn);
     }
-    
+
     /**
-     * 根据ID删除地址
+     * 删除地址
      */
     @Override
-    public int deleteById(Long id) {
-        return userAddressMapperHelper.deleteById(id);
+    @Transactional(rollbackFor = TransactionalException.class)
+    public Result<String> deleteBySn(String addressSn,String userSn) {
+        Long userId = userAddressMapperHelper.getUserId(userSn);
+        userAddressMapperHelper.deleteAddress(addressSn,userId);
+        return Result.success("success");
     }
     
     /**
      * 更新地址
      */
     @Override
-    public int update(UserAddress userAddress) {
-        return userAddressMapperHelper.update(userAddress);
+    @Transactional(rollbackFor = TransactionalException.class)
+    public Result<String> updateAds(UserAdsUpdate update, String addressSn, String userSn) {
+        Object lock = getLock(userSn);
+        synchronized ( lock) {
+            userAddressMapperHelper.updateAds(update, addressSn);
+        }
+        return Result.success("success");
     }
-    
+
     /**
-     * 根据ID查询地址
+     * 获取用户地址列表
      */
     @Override
-    public UserAddress selectById(Long id) {
-        return userAddressMapperHelper.selectById(id);
+    @Transactional(readOnly = true,propagation = Propagation.SUPPORTS)
+    public Result<List<UserAddressVO>> getListAddress(String userSn) {
+
+        Long userId = userAddressMapperHelper.getUserId(userSn);
+        List<UserAddressVO> list = userAddressMapperHelper.gerListAddress(userId);
+
+        return Result.success("success",list);
     }
-    
-    /**
-     * 根据用户ID查询地址列表
-     */
-    @Override
-    public List<UserAddress> selectByUserId(Long userId) {
-        return userAddressMapperHelper.selectByUserId(userId);
+
+    private Object getLock(String userSn){
+        adsLock.entrySet().removeIf(entry->{
+            WeakReference<Object> ref = entry.getValue();
+            return ref != null && ref.get() == null;
+        });
+
+        return adsLock.compute(userSn, (key, ref) -> {
+            if (ref != null){
+                Object lock = ref.get();
+                if (lock != null){
+                    return ref;
+                }
+            }
+            return new WeakReference<>(new Object());
+        }).get();
     }
-    
-    /**
-     * 根据用户ID查询默认地址
-     */
-    @Override
-    public UserAddress selectDefaultByUserId(Long userId) {
-        return userAddressMapperHelper.selectDefaultByUserId(userId);
-    }
-    
-    /**
-     * 查询所有地址
-     */
-    @Override
-    public List<UserAddress> selectAll() {
-        return userAddressMapperHelper.selectAll();
-    }
-    
-    /**
-     * 根据条件查询地址列表
-     */
-    @Override
-    public List<UserAddress> selectByCondition(UserAddress userAddress) {
-        return userAddressMapperHelper.selectByCondition(userAddress);
-    }
+
+
+
 }

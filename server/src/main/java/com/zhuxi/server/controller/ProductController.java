@@ -1,26 +1,31 @@
 package com.zhuxi.server.controller;
 
 import com.zhuxi.common.result.Result;
+import com.zhuxi.pojo.DTO.Product.ProductSdDTO;
 import com.zhuxi.pojo.entity.Product;
-import com.zhuxi.server.service.ProductService;
+import com.zhuxi.server.service.Service.ProductService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/product")
+@RequestMapping("/product/me")
 @CrossOrigin(origins = "*")
+@RequiredArgsConstructor
 public class ProductController {
     
-    @Autowired
-    private ProductService productService;
+    private final ProductService productService;
     
     // 插入商品
-    @PostMapping("/insert")
-    public Result<String> insert(@RequestBody Product product) {
-        int result = productService.insert(product);
-        return result > 0 ? Result.success("插入成功") : Result.fail("插入失败");
+    @PostMapping("/publish/SecondHand/{userSn}")
+    public Result<String> insert(@RequestBody @Valid ProductSdDTO product,
+                                 @PathVariable String userSn,
+                                 Integer isDraft
+                                 ) {
+        return productService.pSdProduct(product, userSn, isDraft);
     }
     
     // 根据ID删除商品

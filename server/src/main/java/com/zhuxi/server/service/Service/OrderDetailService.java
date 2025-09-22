@@ -1,10 +1,10 @@
-package com.zhuxi.server.service;
+package com.zhuxi.server.service.Service;
 
 import com.zhuxi.pojo.entity.OrderDetail;
 
 import java.util.List;
 
-public interface OrderDetailService {
+public interface  OrderDetailService {
     
     /**
      * 插入订单明细

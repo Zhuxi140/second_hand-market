@@ -2,7 +2,7 @@ package com.zhuxi.server.service.impl;
 
 import com.zhuxi.pojo.entity.Shop;
 import com.zhuxi.server.helper.ShopMapperHelper;
-import com.zhuxi.server.service.ShopService;
+import com.zhuxi.server.service.Service.ShopService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

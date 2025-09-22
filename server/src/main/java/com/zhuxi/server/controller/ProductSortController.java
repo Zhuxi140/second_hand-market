@@ -2,7 +2,7 @@ package com.zhuxi.server.controller;
 
 import com.zhuxi.common.result.Result;
 import com.zhuxi.pojo.entity.ProductSort;
-import com.zhuxi.server.service.ProductSortService;
+import com.zhuxi.server.service.Service.ProductSortService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

@@ -2,7 +2,7 @@ package com.zhuxi.server.controller;
 
 import com.zhuxi.common.result.Result;
 import com.zhuxi.pojo.entity.ProductStatic;
-import com.zhuxi.server.service.ProductStaticService;
+import com.zhuxi.server.service.Service.ProductStaticService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

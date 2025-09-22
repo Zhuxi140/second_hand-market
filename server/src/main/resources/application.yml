@@ -19,6 +19,10 @@ spring:
       port: 6380
       host: localhost
       password: 123456
+  web:
+    resources:
+      static-locations:
+      - classpath:static
 
 # MyBatis配置
 mybatis:

@@ -1,34 +1,84 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.zhuxi.server.mapper.UserAddressMapper">
-    
-    <!-- 根据条件查询地址列表 -->
-    <select id="selectByCondition" parameterType="com.zhuxi.pojo.entity.UserAddress" resultType="com.zhuxi.pojo.entity.UserAddress">
-        SELECT * FROM user_address
-        <where>
-            <if test="userId != null">
-                AND user_id = #{userId}
+    <update id="updateBase">
+        UPDATE user_address
+        <set>
+            <if test="update.consignee != null and update.consignee != ''">
+                consignee = #{update.consignee},
             </if>
-            <if test="consignee != null and consignee != ''">
-                AND consignee LIKE CONCAT('%', #{consignee}, '%')
+            <if test="update.sex != null and update.sex != ''">
+                sex = #{update.sex},
             </if>
-            <if test="phone != null and phone != ''">
-                AND phone = #{phone}
+            <if test="update.phone != null and update.phone != ''">
+                phone = #{update.phone},
             </if>
-            <if test="provinceName != null and provinceName != ''">
-                AND province_name LIKE CONCAT('%', #{provinceName}, '%')
+            <if test="update.label != null and update.label != ''">
+                label = #{update.label},
             </if>
-            <if test="cityName != null and cityName != ''">
-                AND city_name LIKE CONCAT('%', #{cityName}, '%')
+            <if test="update.isDefault != null">
+                is_default = #{update.isDefault}
             </if>
-            <if test="districtName != null and districtName != ''">
-                AND district_name LIKE CONCAT('%', #{districtName}, '%')
+        </set>
+        WHERE addressSn = #{addressSn}
+    </update>
+
+    <update id="updateLocation">
+        UPDATE user_address
+        <set>
+            <if test="update.detail != null and update.detail != ''">
+                detail = #{update.detail},
             </if>
-            <if test="isDefault != null">
-                AND is_default = #{isDefault}
+            <if test="update.provinceCode != null and update.provinceCode != ''">
+                province_code = #{update.provinceCode},
+                province_name = #{update.provinceName},
+                city_code = #{update.cityCode},
+                city_name = #{update.cityName},
+                district_code = #{update.districtCode},
+                district_name = #{update.districtName}
             </if>
-        </where>
-        ORDER BY is_default DESC, created_at DESC
-    </select>
-    
+        </set>
+        WHERE addressSn = #{addressSn}
+    </update>
+    <update id="updateAds">
+            UPDATE user_address
+            <set>
+                <if test="update.consignee != null and update.consignee != ''">
+                    consignee = #{update.consignee},
+                </if>
+                <if test="update.sex != null and update.sex != ''">
+                    sex = #{update.sex},
+                </if>
+                <if test="update.phone != null and update.phone != ''">
+                    phone = #{update.phone},
+                </if>
+                <if test="update.provinceCode != null and update.provinceCode != ''">
+                    province_code = #{update.provinceCode},
+                </if>
+                <if test="update.provinceName != null and update.provinceName != ''">
+                    province_name = #{update.provinceName},
+                </if>
+                <if test="update.cityCode != null and update.cityCode != ''">
+                    city_code = #{update.cityCode},
+                </if>
+                <if test="update.cityName != null and update.cityName != ''">
+                    city_name = #{update.cityName},
+                </if>
+                <if test="update.districtCode != null and update.districtCode != ''">
+                    district_code = #{update.districtCode},
+                </if>
+                <if test="update.districtName != null and update.districtName != ''">
+                    district_name = #{update.districtName},
+                </if>
+                <if test="update.detail != null and update.detail != ''">
+                    detail = #{update.detail},
+                </if>
+                <if test="update.label != null and update.label != ''">
+                    label = #{update.label},
+                </if>
+                <if test="update.isDefault != null">
+                    is_default = #{update.isDefault}
+                </if>
+            </set>
+    </update>
 </mapper>

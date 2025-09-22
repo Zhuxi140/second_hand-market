@@ -2,7 +2,7 @@ package com.zhuxi.server.service.impl;
 
 import com.zhuxi.pojo.entity.UserCollect;
 import com.zhuxi.server.helper.UserCollectMapperHelper;
-import com.zhuxi.server.service.UserCollectService;
+import com.zhuxi.server.service.Service.UserCollectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -4,6 +4,7 @@ import com.zhuxi.common.constant.CommonMessage;
 import com.zhuxi.common.constant.TransactionMessage;
 import com.zhuxi.common.exception.TransactionalException;
 import com.zhuxi.pojo.DTO.User.UserRegisterDTO;
+import com.zhuxi.pojo.DTO.User.UserUpdateInfoDTO;
 import com.zhuxi.pojo.VO.User.UserViewVO;
 import com.zhuxi.pojo.entity.User;
 import com.zhuxi.server.mapper.UserMapper;
@@ -28,7 +29,7 @@ public class UserMapperHelper {
         try {
             int register = userMapper.register(user);
             if (register < 1){
-                log.error("用户注册失败-: username:{}  cases: {}", user.getUsername(), CommonMessage.DATABASE_INSERT_FAIL);
+                log.error("用户注册失败-: username:{}  cases: {}", user.getUsername(), CommonMessage.DATABASE_INSERT_EXCEPTION);
                 throw new TransactionalException(TransactionMessage.REGISTER_ERROR);
             }
         }catch (DuplicateKeyException e){
@@ -57,7 +58,7 @@ public class UserMapperHelper {
     public void UpdatePw(String userSn, String newPw){
         int result = userMapper.UpdatePw(userSn, newPw);
         if (result < 1){
-            log.error("用户密码更新失败-: userSn:{}\n cases: {}", userSn,CommonMessage.DATABASE_UPDATE_FAIL);
+            log.error("用户密码更新失败-: userSn:{}\n cases: {}", userSn,CommonMessage.DATABASE_UPDATE_EXCEPTION);
             throw new TransactionalException(TransactionMessage.UPDATE_PW_ERROR);
         }
     }
@@ -88,8 +89,12 @@ public class UserMapperHelper {
     /**
      * 更新用户
      */
-    public int update(User user) {
-        return userMapper.update(user);
+    public void updateInfo(UserUpdateInfoDTO user, String userSn) {
+        int result = userMapper.updateInfo(user, userSn);
+        if (result < 1){
+            log.error("用户信息更新失败-: userSn:{}\n cases: {}", userSn,CommonMessage.DATABASE_UPDATE_EXCEPTION);
+            throw new TransactionalException(TransactionMessage.UPDATE_INFO_ERROR);
+        }
     }
 
 }

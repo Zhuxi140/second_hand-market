@@ -19,6 +19,4 @@ public class UserAddress {
     private String detail;
     private String label;
     private Integer isDefault;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 }

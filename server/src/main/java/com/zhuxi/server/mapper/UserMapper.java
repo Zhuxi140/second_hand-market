@@ -1,6 +1,7 @@
 package com.zhuxi.server.mapper;
 
 import com.zhuxi.pojo.DTO.User.UserRegisterDTO;
+import com.zhuxi.pojo.DTO.User.UserUpdateInfoDTO;
 import com.zhuxi.pojo.VO.User.UserViewVO;
 import com.zhuxi.pojo.entity.User;
 import org.apache.ibatis.annotations.*;
@@ -38,6 +39,7 @@ public interface UserMapper {
         userSn,
         username,
         nickname,
+        gender,
         phone,
         email,
         avatar,
@@ -49,10 +51,8 @@ public interface UserMapper {
     UserViewVO getUserInfo(String userSn);
 
     // 更新用户
-    @Update("UPDATE user SET userSn = #{userSn}, username = #{username}, password = #{password}, " +
-            "nickname = #{nickname}, email = #{email}, phone = #{phone}, avatar = #{avatar}, " +
-            "status = #{status}, role = #{role}, updated_at = #{updatedAt} WHERE id = #{id}")
-    int update(User user);
+
+    int updateInfo(@Param("user") UserUpdateInfoDTO user, @Param("userSn") String userSn);
 
     // 获取密码
     @Select("SELECT password FROM user WHERE userSn = #{userSn}")

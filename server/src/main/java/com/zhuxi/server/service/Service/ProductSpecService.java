@@ -1,4 +1,4 @@
-package com.zhuxi.server.service;
+package com.zhuxi.server.service.Service;
 
 import com.zhuxi.pojo.entity.ProductSpec;
 

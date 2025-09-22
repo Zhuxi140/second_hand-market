@@ -2,7 +2,7 @@ package com.zhuxi.server.service.impl;
 
 import com.zhuxi.pojo.entity.UserComment;
 import com.zhuxi.server.helper.UserCommentMapperHelper;
-import com.zhuxi.server.service.UserCommentService;
+import com.zhuxi.server.service.Service.UserCommentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

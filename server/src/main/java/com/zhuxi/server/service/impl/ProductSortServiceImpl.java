@@ -2,7 +2,7 @@ package com.zhuxi.server.service.impl;
 
 import com.zhuxi.pojo.entity.ProductSort;
 import com.zhuxi.server.helper.ProductSortMapperHelper;
-import com.zhuxi.server.service.ProductSortService;
+import com.zhuxi.server.service.Service.ProductSortService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

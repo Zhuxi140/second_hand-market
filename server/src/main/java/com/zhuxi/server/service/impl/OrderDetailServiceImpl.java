@@ -2,7 +2,7 @@ package com.zhuxi.server.service.impl;
 
 import com.zhuxi.pojo.entity.OrderDetail;
 import com.zhuxi.server.helper.OrderDetailMapperHelper;
-import com.zhuxi.server.service.OrderDetailService;
+import com.zhuxi.server.service.Service.OrderDetailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

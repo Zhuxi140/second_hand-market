@@ -2,7 +2,7 @@ package com.zhuxi.server.controller;
 
 import com.zhuxi.common.result.Result;
 import com.zhuxi.pojo.entity.UserComment;
-import com.zhuxi.server.service.UserCommentService;
+import com.zhuxi.server.service.Service.UserCommentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

@@ -2,10 +2,10 @@ package com.zhuxi.common.constant;
 
 public class CommonMessage {
 
-    public static final String DATABASE_INSERT_FAIL =  "数据库插入失败";
-    public static final String DATABASE_UPDATE_FAIL = "数据库更新失败";
-    public static final String DATABASE_DELETE_FAIL = "数据库删除失败";
-    public static final String DATABASE_SELECT_FAIL = "数据库查询失败";
+    public static final String DATABASE_INSERT_EXCEPTION =  "数据库执行插入操作失败或结果为null(或<=0)";
+    public static final String DATABASE_UPDATE_EXCEPTION = "数据库执行更新操作失败或结果为null(或<=0)";
+    public static final String DATABASE_DELETE_EXCEPTION = "数据库执行删除操作失败或结果为null(或<=0)";
+    public static final String DATABASE_SELECT_EXCEPTION = "数据库执行查询操作失败或结果为null(或<=0)";
 
 
 }

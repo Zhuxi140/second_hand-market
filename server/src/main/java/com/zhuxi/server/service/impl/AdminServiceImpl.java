@@ -2,7 +2,7 @@ package com.zhuxi.server.service.impl;
 
 import com.zhuxi.pojo.entity.Admin;
 import com.zhuxi.server.helper.AdminMapperHelper;
-import com.zhuxi.server.service.AdminService;
+import com.zhuxi.server.service.Service.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

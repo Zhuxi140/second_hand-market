@@ -1,12 +1,14 @@
-package com.zhuxi.server.service;
+package com.zhuxi.server.service.Service;
 
+import com.zhuxi.common.result.Result;
+import com.zhuxi.pojo.DTO.Product.ProductSdDTO;
 import com.zhuxi.pojo.entity.Product;
 
 import java.util.List;
 
 public interface ProductService {
-    // 插入商品
-    int insert(Product product);
+    // 发布二手商品
+    Result<String> pSdProduct(ProductSdDTO product,String userSn,Integer isDraft);
     
     // 根据ID删除商品
     int deleteById(Long id);

@@ -4,7 +4,6 @@ import com.zhuxi.common.properties.JwtProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.jackson.io.JacksonDeserializer;
 import org.springframework.stereotype.Component;
 

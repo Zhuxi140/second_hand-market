@@ -7,13 +7,14 @@ import com.zhuxi.common.result.Result;
 import com.zhuxi.common.utils.BCryptUtils;
 import com.zhuxi.pojo.DTO.User.UserLoginDTO;
 import com.zhuxi.pojo.DTO.User.UserRegisterDTO;
+import com.zhuxi.pojo.DTO.User.UserUpdateInfoDTO;
 import com.zhuxi.pojo.DTO.User.UserUpdatePwDTO;
 import com.zhuxi.pojo.VO.User.UserLoginVO;
 import com.zhuxi.pojo.VO.User.UserRegisterVO;
 import com.zhuxi.pojo.VO.User.UserViewVO;
 import com.zhuxi.pojo.entity.User;
 import com.zhuxi.server.helper.UserMapperHelper;
-import com.zhuxi.server.service.UserService;
+import com.zhuxi.server.service.Service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -24,6 +25,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 @RequiredArgsConstructor
+// 待完善接口 -- 修改手机号、头像上传处理逻辑等
 public class UserServiceImpl implements UserService {
     
     private final UserMapperHelper userMapperHelper;
@@ -117,8 +119,10 @@ public class UserServiceImpl implements UserService {
      * 待完善: 核心逻辑 、 检查userSn与 token中的标识 一致性
      */
     @Override
-    public int update(User user) {
-        return userMapperHelper.update(user);
+    @Transactional(rollbackFor = TransactionalException.class)
+    public Result<String> updateInfo(UserUpdateInfoDTO user,String userSn) {
+        userMapperHelper.updateInfo(user,userSn);
+        return Result.success("success");
     }
 
     /**

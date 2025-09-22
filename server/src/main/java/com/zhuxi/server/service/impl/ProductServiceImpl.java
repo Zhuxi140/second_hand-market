@@ -1,25 +1,36 @@
 package com.zhuxi.server.service.impl;
 
+import com.zhuxi.common.constant.TransactionMessage;
+import com.zhuxi.common.exception.TransactionalException;
+import com.zhuxi.common.result.Result;
+import com.zhuxi.pojo.DTO.Product.ProductSdDTO;
 import com.zhuxi.pojo.entity.Product;
 import com.zhuxi.server.helper.ProductMapperHelper;
-import com.zhuxi.server.service.ProductService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.zhuxi.server.service.Service.ProductService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionManager;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
     
-    @Autowired
-    private ProductMapperHelper productMapperHelper;
+    private final ProductMapperHelper productMapperHelper;
     
     /**
-     * 插入商品
+     * 发布二手商品
      */
     @Override
-    public int insert(Product product) {
-        return productMapperHelper.insert(product);
+    @Transactional(rollbackFor = TransactionalException.class)
+    public Result<String> pSdProduct(ProductSdDTO product,String userSn,Integer isDraft) {
+        if (isDraft == null){
+            Result.fail(TransactionMessage.DRAFT_NOT_NULL);
+        }
+        productMapperHelper.psdProduct(product,isDraft);
+        return Result.success("发布成功");
     }
     
     /**

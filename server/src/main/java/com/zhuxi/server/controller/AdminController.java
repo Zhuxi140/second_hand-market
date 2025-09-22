@@ -2,7 +2,7 @@ package com.zhuxi.server.controller;
 
 import com.zhuxi.common.result.Result;
 import com.zhuxi.pojo.entity.Admin;
-import com.zhuxi.server.service.AdminService;
+import com.zhuxi.server.service.Service.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

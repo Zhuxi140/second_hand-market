@@ -2,7 +2,7 @@ package com.zhuxi.server.service.impl;
 
 import com.zhuxi.pojo.entity.Chat;
 import com.zhuxi.server.helper.ChatMapperHelper;
-import com.zhuxi.server.service.ChatService;
+import com.zhuxi.server.service.Service.ChatService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -1,15 +1,13 @@
-package com.zhuxi.server.service;
+package com.zhuxi.server.service.Service;
 
 import com.zhuxi.common.result.Result;
 import com.zhuxi.pojo.DTO.User.UserLoginDTO;
 import com.zhuxi.pojo.DTO.User.UserRegisterDTO;
+import com.zhuxi.pojo.DTO.User.UserUpdateInfoDTO;
 import com.zhuxi.pojo.DTO.User.UserUpdatePwDTO;
 import com.zhuxi.pojo.VO.User.UserLoginVO;
 import com.zhuxi.pojo.VO.User.UserRegisterVO;
 import com.zhuxi.pojo.VO.User.UserViewVO;
-import com.zhuxi.pojo.entity.User;
-
-import java.util.List;
 
 public interface UserService {
     // 注册用户
@@ -22,7 +20,7 @@ public interface UserService {
     Result<String> logout();
 
     // 更新用户
-    int update(User user);
+    Result<String> updateInfo(UserUpdateInfoDTO user,String userSn);
     
     // 获取用户信息
     Result<UserViewVO> getUserInfo(String userSn);

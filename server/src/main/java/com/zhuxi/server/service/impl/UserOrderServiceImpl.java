@@ -2,7 +2,7 @@ package com.zhuxi.server.service.impl;
 
 import com.zhuxi.pojo.entity.UserOrder;
 import com.zhuxi.server.helper.UserOrderMapperHelper;
-import com.zhuxi.server.service.UserOrderService;
+import com.zhuxi.server.service.Service.UserOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

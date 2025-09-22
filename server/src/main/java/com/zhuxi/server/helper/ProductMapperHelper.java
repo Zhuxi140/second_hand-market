@@ -1,23 +1,35 @@
 package com.zhuxi.server.helper;
 
+import com.zhuxi.common.constant.CommonMessage;
+import com.zhuxi.common.constant.TransactionMessage;
+import com.zhuxi.pojo.DTO.Product.ProductSdDTO;
 import com.zhuxi.pojo.entity.Product;
 import com.zhuxi.server.mapper.ProductMapper;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.transaction.TransactionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
+@Slf4j
 public class ProductMapperHelper {
     
-    @Autowired
+
     private ProductMapper productMapper;
     
     /**
      * 插入商品
      */
-    public int insert(Product product) {
-        return productMapper.insert(product);
+    public void psdProduct(ProductSdDTO product,Integer isDraft) {
+        int result = productMapper.psdProduct(product,isDraft);
+        if (result <= 0){
+            log.error("psdProduct-case:{}", CommonMessage.DATABASE_INSERT_EXCEPTION);
+            throw new TransactionException(TransactionMessage.PUBLISH_ERROR);
+        }
     }
     
     /**

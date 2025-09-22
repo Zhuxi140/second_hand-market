@@ -1,5 +1,6 @@
 package com.zhuxi.server.mapper;
 
+import com.zhuxi.pojo.DTO.Product.ProductSdDTO;
 import com.zhuxi.pojo.entity.Product;
 import org.apache.ibatis.annotations.*;
 
@@ -7,11 +8,12 @@ import java.util.List;
 
 @Mapper
 public interface ProductMapper {
-    // 插入商品
-    @Insert("INSERT INTO product (product_sn, seller_id, shop_id, title, description, category_id, price, condition, status, location, view_count, created_at, updated_at) " +
-            "VALUES (#{productSn}, #{sellerId}, #{shopId}, #{title}, #{description}, #{categoryId}, #{price}, #{condition}, #{status}, #{location}, #{viewCount}, #{createdAt}, #{updatedAt})")
-    @Options(useGeneratedKeys = true, keyProperty = "id")
-    int insert(Product product);
+    // 发布二手商品
+    @Insert("""
+            INSERT INTO product (product_sn, seller_id, title, description, category_id, price, condition_id, status, location,is_draft)
+            VALUES (#{productSn}, #{sellerId}, #{title}, #{description}, #{categoryId}, #{price}, #{conditionId}, #{status}, #{location},#{isDraft})
+    """)
+    int psdProduct(ProductSdDTO product,Integer isDraft);
     
     // 根据ID删除商品
     @Delete("DELETE FROM product WHERE id = #{id}")
