@@ -1,0 +1,38 @@
+server:
+  port: 8080
+
+spring:
+  profiles:
+    active: primary
+  web:
+    resources:
+      static-locations: classpath:/static/
+  datasource:
+    url: jdbc:mysql://localhost:3306/second_hand_market
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+mybatis:
+  mapper-locations: classpath*:mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+
+logging:
+  level:
+    root: debug
+    org.springframework.jdbc: debug
+    com.zaxxer.hikari: debug
+
+bcrypt:
+  strength: 10
+
+jwt:
+  admin-expire: 86400
+  admin-header: admin-token
+  admin-secret: 0Oruxa96a/sdrtYCgkzhsZz+oUVyVKMdLu+X9aPn0Nk=
+  user-secret: MkU1pCpq+8tb/XQfHGC8HpQqd6gDsGYFqRzZ5YDDojQ=
+  user-expire: 86400
+  user-header: user-token
+
+

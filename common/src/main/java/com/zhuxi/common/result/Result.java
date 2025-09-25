@@ -1,7 +1,6 @@
 package com.zhuxi.common.result;
 
 
-import com.zhuxi.common.constant.CommonMessage;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

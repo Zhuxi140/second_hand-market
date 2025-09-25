@@ -1,6 +1,6 @@
-**/target/**
+../common/target/classes
 .idea
 .iml
 .class
 *Test.java
-**/test/**
+main/src/test/java
