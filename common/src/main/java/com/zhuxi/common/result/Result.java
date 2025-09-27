@@ -1,17 +1,31 @@
 package com.zhuxi.common.result;
 
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * 统一响应结果封装类
+ * @param <T> 响应数据类型
+ * @author zhuxi
+ */
+@Schema(description = "统一响应结果")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Result<T> {
+    @Schema(description = "响应状态码", example = "200")
     private int code;
+    
+    @Schema(description = "响应消息", example = "success")
     private String message;
+    
+    @Schema(description = "响应数据")
     private T data;
+    
+    @Schema(description = "响应时间戳", example = "1640995200000")
     private long timestamp;
 
     /**

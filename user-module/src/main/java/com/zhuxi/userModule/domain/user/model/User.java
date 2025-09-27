@@ -11,25 +11,50 @@ import com.zhuxi.userModule.interfaces.dto.user.UserLoginDTO;
 import com.zhuxi.userModule.interfaces.dto.user.UserRegisterDTO;
 import com.zhuxi.userModule.interfaces.dto.user.UserUpdateInfoDTO;
 import com.zhuxi.userModule.interfaces.dto.user.UserUpdatePwDTO;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
-
-
+/**
+ * 用户领域模型
+ * @author zhuxi
+ */
+@Schema(description = "用户实体")
 @Getter
 public class User {
+    @Schema(description = "用户主键ID", example = "1")
     private Long id;
+    
+    @Schema(description = "用户对外唯一编号", example = "USR202401010001")
     private String userSn;
+    
+    @Schema(description = "用户名")
     private Username username;
+    
+    @Schema(description = "密码", hidden = true)
     private String password;
+    
+    @Schema(description = "用户昵称", example = "换换1234")
     private String nickname;
+    
+    @Schema(description = "邮箱地址")
     private Email email;
+    
+    @Schema(description = "手机号")
     private Phone phone;
+    
+    @Schema(description = "头像URL", example = "https://example.com/avatar.jpg")
     private String avatar;
+    
+    @Schema(description = "用户状态", example = "1")
     private Integer status;
+    
+    @Schema(description = "用户角色", example = "user")
     private Role role;
+    
+    @Schema(description = "性别", example = "男")
     private String gender = null;
 
     private User(Long id, String userSn, Username username, String password, String nickname,

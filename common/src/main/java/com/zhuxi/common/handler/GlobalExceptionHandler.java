@@ -22,7 +22,6 @@ public class GlobalExceptionHandler {
     public Result<String> handleException(LocationException e)
     {
         String message = e.getMessage();
-
         log.error(message + "--location: {}", e.getLocation());
         return Result.fail(message);
     }
