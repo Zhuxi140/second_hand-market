@@ -1,28 +1,29 @@
 package com.zhuxi.userModule.application.service;
 
 
-import com.zhuxi.common.exception.TransactionalException;
-import com.zhuxi.common.result.Result;
-import com.zhuxi.userModule.infrastructure.repository.impl.UserAddressMapperHelper;
+import com.zhuxi.common.exception.BusinessException;
+import com.zhuxi.userModule.domain.address.model.UserAddress;
+import com.zhuxi.userModule.domain.address.repository.UserAddressRepository;
 import com.zhuxi.userModule.domain.address.service.UserAddressService;
 import com.zhuxi.userModule.interfaces.dto.address.AdsRegisterDTO;
 import com.zhuxi.userModule.interfaces.dto.address.AdsUpdate;
 import com.zhuxi.userModule.interfaces.vo.address.UserAddressVO;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import java.lang.ref.WeakReference;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserAddressServiceImpl implements UserAddressService {
     
-    private final UserAddressMapperHelper userAddressMapperHelper;
+    private final UserAddressRepository repository;
     private final ConcurrentMap<String, WeakReference<Object>> adsLock = new ConcurrentHashMap<>();
 
 
@@ -32,30 +33,30 @@ public class UserAddressServiceImpl implements UserAddressService {
      *待完善:  验证jwt中userSn与参数 userSn的一致性 并发等
 */
     @Override
-    @Transactional(rollbackFor = TransactionalException.class)
-    public Result<String> insertAddress(AdsRegisterDTO address, String userSn) {
+    @Transactional(rollbackFor = BusinessException.class)
+    public String insertAddress(AdsRegisterDTO register, String userSn) {
 
-        Long userId = userAddressMapperHelper.getUserId(userSn);
-        userAddressMapperHelper.checkAddressCount(userId);
+        UserAddress address = repository.getUserIdBySn(userSn);
+        Long userId = address.getUserId();
+
+        //检查地址数量是否上限
+        repository.checkAddressCount(userId);
 
         // 若用户指定为默认地址，则取消其他已有的默认地址 否则设置为非默认地址
-        if (address.getIsDefault() == 1){
-            Long addressDefaultId = userAddressMapperHelper.getAddressDefaultId(userId);
+        if (register.getIsDefault() == 1){
+            Long addressDefaultId = repository.getDefaultId(userId);
             if (addressDefaultId != null){
-                userAddressMapperHelper.cancelDefault(addressDefaultId);
+                repository.cancelDefault(addressDefaultId);
             }
         }else{
-            address.setIsDefault(0);
+            register.setIsDefault(0);
         }
-        // 生成地址唯一标识 addressSn
-        address.setAddressSn(UUID.randomUUID().toString());
 
-        address.setUserId(userId);
-        // 插入地址
-        userAddressMapperHelper.insert(address,userSn);
-        String addressSn = userAddressMapperHelper.selectAddressSnById(address.getId());
+        String addressSn = address.register(register);
+        // 写入
+        repository.save(address);
 
-        return Result.success("success",addressSn);
+        return addressSn;
     }
 
 /*
@@ -63,11 +64,9 @@ public class UserAddressServiceImpl implements UserAddressService {
      * 删除地址
 */
     @Override
-    @Transactional(rollbackFor = TransactionalException.class)
-    public Result<String> deleteBySn(String addressSn,String userSn) {
-        Long userId = userAddressMapperHelper.getUserId(userSn);
-        userAddressMapperHelper.deleteAddress(addressSn,userId);
-        return Result.success("success");
+    @Transactional(rollbackFor = BusinessException.class)
+    public void deleteBySn(String addressSn,String userSn) {
+        repository.deleteAddress(addressSn);
     }
     
 /*
@@ -75,13 +74,14 @@ public class UserAddressServiceImpl implements UserAddressService {
      * 更新地址
 */
     @Override
-    @Transactional(rollbackFor = TransactionalException.class)
-    public Result<String> updateAds(AdsUpdate update, String addressSn, String userSn) {
+    @Transactional(rollbackFor = BusinessException.class)
+    public void updateAds(AdsUpdate update, String addressSn, String userSn) {
         Object lock = getLock(userSn);
         synchronized ( lock) {
-            userAddressMapperHelper.updateAds(update, addressSn);
+            UserAddress address = repository.getAddressIdBySn(addressSn);
+            address.update(update);
+            repository.save(address);
         }
-        return Result.success("success");
     }
 
 /*
@@ -90,12 +90,9 @@ public class UserAddressServiceImpl implements UserAddressService {
 */
     @Override
     @Transactional(readOnly = true,propagation = Propagation.SUPPORTS)
-    public Result<List<UserAddressVO>> getListAddress(String userSn) {
-
-        Long userId = userAddressMapperHelper.getUserId(userSn);
-        List<UserAddressVO> list = userAddressMapperHelper.gerListAddress(userId);
-
-        return Result.success("success",list);
+    public List<UserAddressVO> getListAddress(String userSn) {
+        UserAddress address = repository.getUserIdBySn(userSn);
+        return repository.gerListAddress(address.getUserId());
     }
 
     private Object getLock(String userSn){

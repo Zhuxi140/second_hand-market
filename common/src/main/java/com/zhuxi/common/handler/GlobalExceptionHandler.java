@@ -3,7 +3,7 @@ package com.zhuxi.common.handler;
 import com.zhuxi.common.constant.ValidationMessage;
 import com.zhuxi.common.exception.JwtException;
 import com.zhuxi.common.exception.LocationException;
-import com.zhuxi.common.exception.TransactionalException;
+import com.zhuxi.common.exception.BusinessException;
 import com.zhuxi.common.result.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.BindingResult;
@@ -56,8 +56,8 @@ public class GlobalExceptionHandler {
     }
 
 
-    @ExceptionHandler(TransactionalException.class)
-    public Result<String> handleException(TransactionalException e)
+    @ExceptionHandler(BusinessException.class)
+    public Result<String> handleException(BusinessException e)
     {
         String message = e.getMessage();
         String location = e.getLocation();

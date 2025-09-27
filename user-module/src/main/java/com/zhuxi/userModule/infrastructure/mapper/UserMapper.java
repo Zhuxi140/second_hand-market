@@ -8,12 +8,16 @@ import org.apache.ibatis.annotations.*;
 
 @Mapper
 public interface UserMapper {
-    // 插入用户
+
+    // 通用save
     @Insert("""
-            INSERT INTO user (userSn, username, password, nickname, phone, status, role)
-            VALUES (#{userSn}, #{username}, #{password}, #{nickname}, #{phone}, 1, #{role})
+            INSERT INTO user (userSn, username, password, nickname, phone, avatar,status, role,gender)
+            VALUES (#{userSn}, #{username}, #{password}, #{nickname}, #{phone},#{avatar}, #{status}, #{role},#{gender})
     """)
-    int register(UserRegisterDTO user);
+    int save(User user);
+
+    // 通用 update
+    int update(User user);
 
     // 判断用户名是否存在
     @Select("SELECT 1 FROM user WHERE username = #{username}")
@@ -21,15 +25,16 @@ public interface UserMapper {
 
     @Select("""
     SELECT
+        id,
         userSn,
-        username,
         password,
         nickname,
+        status,
         role,
         avatar
     FROM user WHERE username = #{username}
     """)
-    User getPasswordByUsername(String username);
+    User getUserByUsername(String username);
 
     //获取用户信息
     @Select("""
@@ -48,16 +53,17 @@ public interface UserMapper {
     """)
     UserViewVO getUserInfo(String userSn);
 
-    // 更新用户
-
-    int updateInfo(@Param("user") UserUpdateInfoDTO user, @Param("userSn") String userSn);
-
-    // 获取密码
-    @Select("SELECT password FROM user WHERE userSn = #{userSn}")
-    String getPWByUserSn(String userSn);
+    @Select("""
+    SELECT
+        id,
+        status,
+        role
+    FROM user WHERE userSn = #{userSn}
+    """)
+    User getISBySn(String userSn);
 
     // 修改密码
-    @Update("UPDATE user SET password = #{newPw} WHERE userSn = #{userSn}")
-    int UpdatePw(String userSn, String newPw);
+    @Update("UPDATE user SET password = #{newPw} WHERE id = #{id}")
+    int updatePw(Long id, String newPw);
 
 }

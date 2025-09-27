@@ -19,7 +19,6 @@
     </properties>
     <dependencies>
 
-
         <dependency>
             <groupId>com.zhuxi</groupId>
             <artifactId>common</artifactId>
@@ -43,13 +42,12 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
-
-        <!--mybatis-->
+        <!--mapStruct-->
         <dependency>
-            <groupId>org.mybatis.spring.boot</groupId>
-            <artifactId>mybatis-spring-boot-starter</artifactId>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
         </dependency>
-
     </dependencies>
+
 
 </project>

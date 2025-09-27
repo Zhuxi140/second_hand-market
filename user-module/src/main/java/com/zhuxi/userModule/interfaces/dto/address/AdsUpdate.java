@@ -1,6 +1,7 @@
 package com.zhuxi.userModule.interfaces.dto.address;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,6 +10,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AdsUpdate {
+    @JsonIgnore
+    private String addressSn;
     private String consignee;
     private String sex;
     private String phone;

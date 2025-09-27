@@ -1,7 +1,10 @@
 package com.zhuxi.userModule.interfaces.controller;
 
 
+import com.zhuxi.common.constant.BusinessMessage;
 import com.zhuxi.common.result.Result;
+import com.zhuxi.userModule.application.assembler.UserConvert;
+import com.zhuxi.userModule.domain.user.model.User;
 import com.zhuxi.userModule.domain.user.service.UserService;
 import com.zhuxi.userModule.interfaces.dto.user.UserLoginDTO;
 import com.zhuxi.userModule.interfaces.dto.user.UserRegisterDTO;
@@ -24,29 +27,41 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     
     private final UserService userService;
-    
+
     // 插入用户
     @PostMapping("/register")
-    public Result<UserRegisterVO> register(@RequestBody(required = true) @Valid UserRegisterDTO user) {
-        return userService.register(user);
+    public Result<UserRegisterVO> register(@RequestBody(required = true) @Valid UserRegisterDTO register) {
+        User user = userService.register(register);
+        if (user == null){
+            return Result.fail(BusinessMessage.REGISTER_ERROR);
+        }
+        UserRegisterVO vo = UserConvert.COVERT.toUserRegisterVO(user);
+        return Result.success(vo);
     }
 
     // 登录
     @PostMapping("/login")
     public Result<UserLoginVO> login(@RequestBody @Valid UserLoginDTO login){
-        return userService.login(login);
+        User user = userService.login(login);
+        if (user == null){
+            return Result.fail(BusinessMessage.USERNAME_OR_PASSWORD_ERROR);
+        }
+        UserLoginVO vo = UserConvert.COVERT.toLoginVO(user);
+        return Result.success(vo);
     }
 
     // 登出
     @PostMapping("/logout")
     public Result<String> logout() {
-        return userService.logout();
+        userService.logout();
+        return Result.success();
     }
 
     // 获取用户信息
     @GetMapping("/me/getInfo/{userSn}")
     public Result<UserViewVO> getUserInfo(@PathVariable String userSn) {
-        return userService.getUserInfo(userSn);
+        UserViewVO vo = userService.getUserInfo(userSn);
+        return Result.success(vo);
     }
 
     // 更新密码
@@ -55,14 +70,16 @@ public class UserController {
             @RequestBody @Valid UserUpdatePwDTO updatePw,
             @PathVariable String userSn
     ){
-        return userService.updatePassword(updatePw, userSn);
+        userService.updatePassword(updatePw, userSn);
+        return Result.success();
     }
 
     
     // 更新用户
     @PutMapping("/me/update/{userSn}")
     public Result<String> update(@RequestBody @Valid UserUpdateInfoDTO user, @PathVariable String userSn) {
-        return userService.updateInfo(user,userSn);
+        userService.updateInfo(user,userSn);
+        return Result.success();
     }
 
 }

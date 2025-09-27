@@ -1,13 +1,87 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.zhuxi.userModule.infrastructure.mapper.UserAddressMapper">
-    <update id="updateAds">
 
-    </update>
-    <update id="updateBase">
+    <resultMap id="UserAddressMap" type="com.zhuxi.userModule.domain.address.model.UserAddress">
+        <id property="id" column="id"/>
+        <result property="addressSn" column="addressSn"/>
+        <result property="userId" column="user_id"/>
+        <result property="isDefault" column="is_default"/>
+        <result property="label" column="label"/>
+        <association property="recipient" javaType="com.zhuxi.userModule.domain.address.ValueObject.Recipient">
+            <result property="consignee" column="consignee"/>
+            <result property="sex" column="sex"/>
+            <result property="phone" column="phone"/>
+        </association>
+        <association property="allAddress" javaType="com.zhuxi.userModule.domain.address.ValueObject.PostalAddress">
+            <result property="provinceCode" column="province_code"/>
+            <result property="provinceName" column="province_name"/>
+            <result property="cityCode" column="city_code"/>
+            <result property="cityName" column="city_name"/>
+            <result property="districtCode" column="district_code"/>
+            <result property="districtName" column="district_name"/>
+            <result property="detail" column="detail"/>
+        </association>
+    </resultMap>
 
-    </update>
-    <update id="updateLocation">
+    <insert id="insert">
+    INSERT INTO
+    user_address
+    (
+       addressSn,user_id, consignee, sex, phone, province_code, province_name,
+       city_code, city_name, district_code, district_name, detail, label, is_default
+    )
+    VALUES
+    (
+        #{addressSn},#{userId}, #{recipient.consignee}, #{recipient.sex}, #{recipient.phone}, #{allAddress.provinceCode}, #{allAddress.provinceName},
+        #{allAddress.cityCode}, #{allAddress.cityName}, #{allAddress.districtCode}, #{allAddress.districtName}, #{allAddress.detail}, #{label}, #{isDefault}
+   )
+    </insert>
 
+    <update id="update" >
+        UPDATE user_address
+        <set>
+            <if test="addressSn != null and addressSn != ''">
+                   addressSn = #{addressSn},
+            </if>
+           <if test="userId != null">
+                   user_id = #{userId},
+            </if>
+            <if test="recipient.consignee != null and recipient.consignee != ''">
+                consignee = #{recipient.consignee},
+            </if>
+                sex = #{recipient.sex},
+            <if test="recipient.phone.number != null and recipient.phone.number != ''">
+                phone = #{recipient.phone.number},
+            </if>
+            <if test="allAddress.provinceCode != null and allAddress.provinceCode != ''">
+            province_code = #{allAddress.provinceCode},
+            </if>
+            <if test="allAddress.provinceName != null and allAddress.provinceName != ''">
+            province_name = #{allAddress.provinceName},
+            </if>
+            <if test="allAddress.cityCode != null and allAddress.cityCode != ''">
+            city_code = #{allAddress.cityCode},
+            </if>
+            <if test="allAddress.cityName != null and allAddress.cityName != ''">
+                city_name = #{allAddress.cityName},
+            </if>
+            <if test="allAddress.districtCode != null and allAddress.districtCode != ''">
+                district_code = #{allAddress.districtCode},
+            </if>
+            <if test="allAddress.districtName != null and allAddress.districtName != ''">
+                district_name = #{allAddress.districtName},
+            </if>
+            <if test="allAddress.detail != null and allAddress.detail != ''">
+                detail = #{allAddress.detail},
+            </if>
+            <if test="label != null and label != ''">
+                label = #{label},
+            </if>
+            <if test="isDefault != null and isDefault != ''">
+                is_default = #{isDefault}
+            </if>
+        </set>
+        WHERE id = #{id}
     </update>
 </mapper>

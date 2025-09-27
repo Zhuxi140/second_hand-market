@@ -1,6 +1,7 @@
 package com.zhuxi.userModule.interfaces.controller;
 
 
+import com.zhuxi.common.constant.BusinessMessage;
 import com.zhuxi.common.result.Result;
 import com.zhuxi.userModule.domain.address.service.UserAddressService;
 import com.zhuxi.userModule.interfaces.dto.address.AdsRegisterDTO;
@@ -26,14 +27,18 @@ public class UserAddressController {
     public Result<String> insert(@RequestBody @Valid AdsRegisterDTO address,
                                  @PathVariable String userSn
                                  ) {
-        return userAddressService.insertAddress(address,userSn);
-
+        String addressSn = userAddressService.insertAddress(address, userSn);
+        if (address == null){
+            return Result.fail(BusinessMessage.ADD_ADDRESS_ERROR);
+        }
+        return Result.success(addressSn);
     }
     
     // 删除地址
     @DeleteMapping("/{userSn}/addresses/{addressSn}")
     public Result<String> deleteById(@PathVariable String addressSn,@PathVariable String userSn) {
-        return userAddressService.deleteBySn(addressSn,userSn);
+        userAddressService.deleteBySn(addressSn,userSn);
+        return Result.success();
     }
 
     // 更新地址
@@ -42,13 +47,18 @@ public class UserAddressController {
                                  @PathVariable String userSn,
                                  @PathVariable String addressSn
                                  ) {
-        return userAddressService.updateAds(userAddress,addressSn,userSn);
+        userAddressService.updateAds(userAddress,addressSn,userSn);
+        return Result.success();
     }
     
 
     @GetMapping("/{userSn}/addresses")
     public Result<List<UserAddressVO>> getListAddress(@PathVariable String userSn) {
-        return userAddressService.getListAddress(userSn);
+        List<UserAddressVO> list = userAddressService.getListAddress(userSn);
+        if (list != null){
+            return Result.success("success",list);
+        }
+        return Result.fail(BusinessMessage.USER_DATA_ERROR);
     }
     
 

@@ -24,6 +24,10 @@ public class Result<T> {
         return new Result<>(200, message,null, System.currentTimeMillis());
     }
 
+    public static <T> Result<T> success() {
+        return new Result<>(200, "message",null, System.currentTimeMillis());
+    }
+
     public static <T> Result<T> success(T data) {
         return new Result<>(200, "success", data, System.currentTimeMillis());
     }
@@ -43,6 +47,10 @@ public class Result<T> {
             message = "fail";
         }
         return new Result<>(500, message, null, System.currentTimeMillis());
+    }
+
+    public static <T> Result<T> fail(){
+        return new Result<>(500, "fail", null, System.currentTimeMillis());
     }
 
     public static <T> Result<T> fail(T data){
