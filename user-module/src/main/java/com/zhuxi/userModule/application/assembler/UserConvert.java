@@ -5,8 +5,10 @@ import com.zhuxi.userModule.interfaces.vo.user.UserLoginVO;
 import com.zhuxi.userModule.interfaces.vo.user.UserRegisterVO;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
-import org.springframework.stereotype.Component;
 
+/**
+ * @author zhuxi
+ */
 @Mapper
 public interface UserConvert {
 

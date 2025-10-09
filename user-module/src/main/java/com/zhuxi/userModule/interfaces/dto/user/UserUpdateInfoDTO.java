@@ -39,7 +39,4 @@ public class UserUpdateInfoDTO {
             message = "性别只能为男、女、或不愿透露"
     )
     private String gender;
-    
-    @Schema(description = "头像URL", example = "https://example.com/avatar.jpg")
-    private String avatar;
 }

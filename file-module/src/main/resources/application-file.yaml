@@ -1,0 +1,12 @@
+
+
+qcloud:
+  secretId: ${SECRET_ID}
+  secretKey: ${SECRET_KEY}
+  region: ${REGION}
+  bucket-name: ${BUCKET_NAME}
+  expire-time: 60  # 单位为秒
+  video-size: 300  # 单位MB
+  image-size: 10   # 单位MB
+  base-url: https://${BUCKET_NAME}.cos.${REGION}.myqcloud.com
+  view-expire-time: 60 # 单位分

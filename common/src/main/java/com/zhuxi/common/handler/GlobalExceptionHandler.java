@@ -1,6 +1,7 @@
 package com.zhuxi.common.handler;
 
 import com.zhuxi.common.constant.ValidationMessage;
+import com.zhuxi.common.exception.COSException;
 import com.zhuxi.common.exception.JwtException;
 import com.zhuxi.common.exception.LocationException;
 import com.zhuxi.common.exception.BusinessException;
@@ -14,11 +15,14 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.stream.Collectors;
 
 
+/**
+ * @author zhuxi
+ */
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler({JwtException.class})
+    @ExceptionHandler({JwtException.class, COSException.class})
     public Result<String> handleException(LocationException e)
     {
         String message = e.getMessage();

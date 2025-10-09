@@ -20,4 +20,6 @@ public class BusinessMessage {
     public static final String UPDATE_ADDRESS_ERROR = "修改地址失败,请稍后重试";
     public static final String PUBLISH_ERROR = "发布或保存草稿失败,请稍后重试";
     public static final String DRAFT_NOT_NULL = "请选择保存草稿或直接发布";
+    public static final String FILE_DATA_SAVE_ERROR = "文件信息写入失败，请稍后重试";
+    public static final String FILE_DATA_UPDATE_ERROR = "文件信息更新失败，请稍后重试";
 }

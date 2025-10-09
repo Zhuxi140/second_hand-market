@@ -7,10 +7,11 @@ import com.zhuxi.userModule.interfaces.dto.user.UserLoginDTO;
 import com.zhuxi.userModule.interfaces.dto.user.UserRegisterDTO;
 import com.zhuxi.userModule.interfaces.dto.user.UserUpdateInfoDTO;
 import com.zhuxi.userModule.interfaces.dto.user.UserUpdatePwDTO;
-import com.zhuxi.userModule.interfaces.vo.user.UserLoginVO;
-import com.zhuxi.userModule.interfaces.vo.user.UserRegisterVO;
 import com.zhuxi.userModule.interfaces.vo.user.UserViewVO;
 
+/**
+ * @author zhuxi
+ */
 public interface UserService {
     // 注册用户
     User register(UserRegisterDTO user);

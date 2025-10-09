@@ -1,0 +1,15 @@
+D:\IDEA\XianYu\file-module\src\main\java\com\zhuxi\fileModule\application\service\FileServiceImpl.java
+D:\IDEA\XianYu\file-module\src\main\java\com\zhuxi\fileModule\config\CosClientConfig.java
+D:\IDEA\XianYu\file-module\src\main\java\com\zhuxi\fileModule\config\QCloudConfig.java
+D:\IDEA\XianYu\file-module\src\main\java\com\zhuxi\fileModule\domain\model\File.java
+D:\IDEA\XianYu\file-module\src\main\java\com\zhuxi\fileModule\domain\repository\FileRepository.java
+D:\IDEA\XianYu\file-module\src\main\java\com\zhuxi\fileModule\domain\service\FileService.java
+D:\IDEA\XianYu\file-module\src\main\java\com\zhuxi\fileModule\infrastructure\mapper\FileMapper.java
+D:\IDEA\XianYu\file-module\src\main\java\com\zhuxi\fileModule\infrastructure\repository\FileRepositoryImpl.java
+D:\IDEA\XianYu\file-module\src\main\java\com\zhuxi\fileModule\interfaces\controller\COSController.java
+D:\IDEA\XianYu\file-module\src\main\java\com\zhuxi\fileModule\interfaces\dto\ConfirmDTO.java
+D:\IDEA\XianYu\file-module\src\main\java\com\zhuxi\fileModule\interfaces\dto\UploadDTO.java
+D:\IDEA\XianYu\file-module\src\main\java\com\zhuxi\fileModule\interfaces\dto\ViewDTO.java
+D:\IDEA\XianYu\file-module\src\main\java\com\zhuxi\fileModule\interfaces\dto\ViewDTOParam.java
+D:\IDEA\XianYu\file-module\src\main\java\com\zhuxi\fileModule\interfaces\vo\ViewVO.java
+D:\IDEA\XianYu\file-module\src\main\java\com\zhuxi\fileModule\interfaces\vo\ViewVOParam.java

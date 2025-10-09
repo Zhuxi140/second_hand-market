@@ -1,8 +1,6 @@
 package com.zhuxi.userModule.domain.address.repository;
 
 import com.zhuxi.userModule.domain.address.model.UserAddress;
-import com.zhuxi.userModule.interfaces.dto.address.AdsBaseUpdate;
-import com.zhuxi.userModule.interfaces.dto.address.AdsUpdate;
 import com.zhuxi.userModule.interfaces.vo.address.UserAddressVO;
 
 import java.util.List;

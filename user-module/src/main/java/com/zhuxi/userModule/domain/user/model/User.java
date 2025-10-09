@@ -123,7 +123,6 @@ public class User {
         this.nickname = update.getNickname();
         this.email = new Email(update.getEmail());
         this.gender = update.getGender();
-        this.avatar = update.getAvatar();
     }
 
     @Override

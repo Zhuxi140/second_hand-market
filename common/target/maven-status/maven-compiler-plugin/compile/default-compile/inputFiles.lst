@@ -1,12 +1,15 @@
 D:\IDEA\XianYu\common\src\main\java\com\zhuxi\common\config\CommonConfig.java
+D:\IDEA\XianYu\common\src\main\java\com\zhuxi\common\constant\BusinessMessage.java
 D:\IDEA\XianYu\common\src\main\java\com\zhuxi\common\constant\CommonMessage.java
 D:\IDEA\XianYu\common\src\main\java\com\zhuxi\common\constant\JwtConstant.java
 D:\IDEA\XianYu\common\src\main\java\com\zhuxi\common\constant\JwtMessage.java
-D:\IDEA\XianYu\common\src\main\java\com\zhuxi\common\constant\TransactionMessage.java
 D:\IDEA\XianYu\common\src\main\java\com\zhuxi\common\constant\ValidationMessage.java
+D:\IDEA\XianYu\common\src\main\java\com\zhuxi\common\enums\MimePart.java
+D:\IDEA\XianYu\common\src\main\java\com\zhuxi\common\exception\BusinessException.java
+D:\IDEA\XianYu\common\src\main\java\com\zhuxi\common\exception\COSException.java
 D:\IDEA\XianYu\common\src\main\java\com\zhuxi\common\exception\JwtException.java
 D:\IDEA\XianYu\common\src\main\java\com\zhuxi\common\exception\LocationException.java
-D:\IDEA\XianYu\common\src\main\java\com\zhuxi\common\exception\TransactionalException.java
+D:\IDEA\XianYu\common\src\main\java\com\zhuxi\common\handler\AbstractValueObjectTypeHandler.java
 D:\IDEA\XianYu\common\src\main\java\com\zhuxi\common\handler\GlobalExceptionHandler.java
 D:\IDEA\XianYu\common\src\main\java\com\zhuxi\common\interceptor\JwtInterceptorAdmin.java
 D:\IDEA\XianYu\common\src\main\java\com\zhuxi\common\interceptor\JwtInterceptorUser.java
@@ -14,5 +17,6 @@ D:\IDEA\XianYu\common\src\main\java\com\zhuxi\common\properties\BCryptProperties
 D:\IDEA\XianYu\common\src\main\java\com\zhuxi\common\properties\JwtProperties.java
 D:\IDEA\XianYu\common\src\main\java\com\zhuxi\common\result\Result.java
 D:\IDEA\XianYu\common\src\main\java\com\zhuxi\common\utils\BCryptUtils.java
+D:\IDEA\XianYu\common\src\main\java\com\zhuxi\common\utils\COSUtils.java
 D:\IDEA\XianYu\common\src\main\java\com\zhuxi\common\utils\JackSonUtils.java
 D:\IDEA\XianYu\common\src\main\java\com\zhuxi\common\utils\JwtUtils.java

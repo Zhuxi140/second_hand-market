@@ -121,10 +121,10 @@ public class UserController {
     @PutMapping("/me/update/{userSn}")
     public Result<String> update(
             @Parameter(description = "用户信息更新数据", required = true)
-            @RequestBody @Valid UserUpdateInfoDTO user, 
+            @RequestBody @Valid UserUpdateInfoDTO update,
             @Parameter(description = "用户编号", required = true)
             @PathVariable String userSn) {
-        userService.updateInfo(user,userSn);
+        userService.updateInfo(update,userSn);
         return Result.success();
     }
 
