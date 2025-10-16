@@ -11,3 +11,7 @@ mybatis:
   mapper-locations: classpath:mapper/*.xml
   type-handlers-package: com.zhuxi.userModule.infrastructure.typeHandler
 
+# 长期token
+refresh:
+  expiration: 7  #单位天
+

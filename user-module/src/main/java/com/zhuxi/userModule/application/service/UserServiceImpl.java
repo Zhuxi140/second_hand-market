@@ -2,21 +2,25 @@ package com.zhuxi.userModule.application.service;
 
 
 import com.zhuxi.common.constant.BusinessMessage;
+import com.zhuxi.common.constant.TokenMessage;
 import com.zhuxi.common.exception.BusinessException;
+import com.zhuxi.common.exception.TokenException;
 import com.zhuxi.common.utils.BCryptUtils;
 import com.zhuxi.userModule.domain.user.model.User;
 import com.zhuxi.userModule.domain.user.repository.UserRepository;
 import com.zhuxi.userModule.domain.user.service.UserService;
-import com.zhuxi.userModule.interfaces.dto.user.UserLoginDTO;
-import com.zhuxi.userModule.interfaces.dto.user.UserRegisterDTO;
-import com.zhuxi.userModule.interfaces.dto.user.UserUpdateInfoDTO;
-import com.zhuxi.userModule.interfaces.dto.user.UserUpdatePwDTO;
+import com.zhuxi.userModule.domain.user.valueObject.RefreshToken;
+import com.zhuxi.userModule.interfaces.dto.user.*;
 import com.zhuxi.userModule.interfaces.vo.user.UserViewVO;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDateTime;
+import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -31,6 +35,9 @@ public class UserServiceImpl implements UserService {
     private final UserRepository repository;
     private final BCryptUtils bCryptUtils;
     private static final ThreadLocalRandom RANDOM = ThreadLocalRandom.current();
+    @Value("${refresh.expiration}")
+    @Getter
+    private int expiration;
 
     /**
      * 注册用户
@@ -60,7 +67,7 @@ public class UserServiceImpl implements UserService {
      */
 
     @Override
-    @Transactional(readOnly = true,propagation = Propagation.SUPPORTS)
+    @Transactional(rollbackFor = BusinessException.class)
     public User login(UserLoginDTO login) {
 
         User user = repository.getLoginByUsername(login.getUsername());
@@ -68,10 +75,24 @@ public class UserServiceImpl implements UserService {
             throw new BusinessException(BusinessMessage.USER_IS_LOCK);
         }
 
-        boolean outCome = user.validateLogin(bCryptUtils,user,login,RANDOM);
+        // 构造长期令牌
+        RefreshToken token = new RefreshToken(
+                null,
+                user.getId(),
+                UUID.randomUUID().toString(),
+                LocalDateTime.now().plusDays(expiration),
+                null,
+                null,
+                null
+        );
+        repository.saveToken(token);
+
+        boolean outCome = user.validateLogin(bCryptUtils,user,login,RANDOM,token);
+
         if (outCome){
             return user;
         }
+
         return null;
     }
 
@@ -135,6 +156,24 @@ public class UserServiceImpl implements UserService {
         repository.updatePw(user.getId(),newHash);
     }
 
+    @Override
+    @Transactional(readOnly = true,propagation=Propagation.SUPPORTS)
+    public RefreshToken renewJwt(RefreshDTO refresh) {
+
+        Long userId = repository.getUserId(refresh.getUserSn());
+        RefreshToken token = repository.getTokenByUserId(userId);
+        if (!token.getTokenHash().equals(refresh.getRefreshToken())){
+            log.warn("刷新令牌不一致");
+            throw new TokenException(TokenMessage.LOGIN_INVALID);
+        }
+
+        if (token.getExpiresAt().isBefore(LocalDateTime.now())){
+            log.warn("刷新令牌已过期");
+            throw new TokenException(TokenMessage.LOGIN_EXPIRED);
+        }
+
+        return token;
+    }
 
 
 }

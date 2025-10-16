@@ -9,8 +9,9 @@ public interface FileRepository {
 
     void save(File  file);
 
-
     void avatarSave(String url, String sn);
+
+    void iconSave(String url,int id);
 
     Long getSkuIdProductId(String sn, String category);
 

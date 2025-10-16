@@ -1,11 +1,12 @@
 package com.zhuxi.userModule.domain.user.model;
 
 import com.zhuxi.common.constant.BusinessMessage;
+import com.zhuxi.common.enums.Role;
 import com.zhuxi.common.exception.BusinessException;
 import com.zhuxi.common.utils.BCryptUtils;
-import com.zhuxi.userModule.domain.user.enums.Role;
 import com.zhuxi.userModule.domain.user.valueObject.Email;
 import com.zhuxi.userModule.domain.user.valueObject.Phone;
+import com.zhuxi.userModule.domain.user.valueObject.RefreshToken;
 import com.zhuxi.userModule.domain.user.valueObject.Username;
 import com.zhuxi.userModule.interfaces.dto.user.UserLoginDTO;
 import com.zhuxi.userModule.interfaces.dto.user.UserRegisterDTO;
@@ -24,38 +25,18 @@ import java.util.concurrent.ThreadLocalRandom;
 @Schema(description = "用户实体")
 @Getter
 public class User {
-    @Schema(description = "用户主键ID", example = "1")
     private Long id;
-    
-    @Schema(description = "用户对外唯一编号", example = "USR202401010001")
     private String userSn;
-    
-    @Schema(description = "用户名")
     private Username username;
-    
-    @Schema(description = "密码", hidden = true)
     private String password;
-    
-    @Schema(description = "用户昵称", example = "换换1234")
     private String nickname;
-    
-    @Schema(description = "邮箱地址")
     private Email email;
-    
-    @Schema(description = "手机号")
     private Phone phone;
-    
-    @Schema(description = "头像URL", example = "https://example.com/avatar.jpg")
     private String avatar;
-    
-    @Schema(description = "用户状态", example = "1")
     private Integer status;
-    
-    @Schema(description = "用户角色", example = "user")
     private Role role;
-    
-    @Schema(description = "性别", example = "男")
     private String gender = null;
+    private RefreshToken refreshToken;
 
     private User(Long id, String userSn, Username username, String password, String nickname,
                 Email email, Phone phone, String gender, String avatar, Integer status, Role role) {
@@ -95,7 +76,8 @@ public class User {
     }
 
     // 登录
-    public boolean validateLogin(BCryptUtils bCryptUtils, User user, UserLoginDTO login, ThreadLocalRandom random){
+    public boolean validateLogin(BCryptUtils bCryptUtils, User user, UserLoginDTO login,
+                                 ThreadLocalRandom random,RefreshToken token){
         String hashPassword = user.getPassword();
         boolean outCome;
         try {
@@ -106,6 +88,8 @@ public class User {
         }catch (NullPointerException e){
             throw new BusinessException(BusinessMessage.USERNAME_OR_PASSWORD_ERROR);
         }
+
+        this.refreshToken = token;
         return outCome;
     }
 

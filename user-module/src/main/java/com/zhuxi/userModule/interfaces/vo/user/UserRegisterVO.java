@@ -1,6 +1,6 @@
 package com.zhuxi.userModule.interfaces.vo.user;
 
-import com.zhuxi.userModule.domain.user.enums.Role;
+import com.zhuxi.common.enums.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -26,14 +26,4 @@ public class UserRegisterVO {
     
     @Schema(description = "头像URL", example = "https://example.com/avatar.jpg")
     private String avatar;
-    
-    @Schema(description = "访问令牌", example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
-    private String accessToken;
-    
-    @Schema(description = "刷新令牌", example = "weadsadgvdsbfdgesfszhcvixuvklxcn...")
-    private String refreshToken;
-    
-    @Schema(description = "令牌过期时间", example = "1640995200000")
-    private Long expireTime;
-
 }

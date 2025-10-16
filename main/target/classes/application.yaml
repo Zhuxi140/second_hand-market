@@ -34,10 +34,10 @@ bcrypt:
   strength: 10
 
 jwt:
-  admin-expire: 86400
+  admin-expire: 1800
   admin-header: admin-token
   admin-secret: 0Oruxa96a/sdrtYCgkzhsZz+oUVyVKMdLu+X9aPn0Nk=
   user-secret: MkU1pCpq+8tb/XQfHGC8HpQqd6gDsGYFqRzZ5YDDojQ=
-  user-expire: 86400
+  user-expire: 1800
   user-header: user-token
 

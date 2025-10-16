@@ -2,11 +2,12 @@ package com.zhuxi.userModule.infrastructure.repository.impl;
 
 import com.zhuxi.common.constant.CommonMessage;
 import com.zhuxi.common.constant.BusinessMessage;
+import com.zhuxi.common.constant.TokenMessage;
 import com.zhuxi.common.exception.BusinessException;
 import com.zhuxi.userModule.domain.user.model.User;
 import com.zhuxi.userModule.domain.user.repository.UserRepository;
+import com.zhuxi.userModule.domain.user.valueObject.RefreshToken;
 import com.zhuxi.userModule.infrastructure.mapper.UserMapper;
-import com.zhuxi.userModule.interfaces.dto.user.UserUpdateInfoDTO;
 import com.zhuxi.userModule.interfaces.vo.user.UserViewVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -84,5 +85,36 @@ public class UserRepositoryImpl implements UserRepository {
             throw new BusinessException(BusinessMessage.USER_DATA_ERROR);
         }
         return user;
+    }
+
+    @Override
+    public Long getUserId(String userSn) {
+        Long userId = userMapper.getUserId(userSn);
+        if (userId == null){
+            log.error("userSn:{}-\ngetUserId-case:{}",userSn,CommonMessage.DATABASE_SELECT_EXCEPTION);
+            throw new BusinessException(BusinessMessage.USER_DATA_ERROR);
+        }
+        return userId;
+    }
+
+
+    @Override
+    public void saveToken(RefreshToken token) {
+        int result = userMapper.saveToken(token);
+        if (result < 1){
+            log.error("用户刷新令牌保存失败-: id:{}\n cases: {}", token.getId(),CommonMessage.DATABASE_INSERT_EXCEPTION);
+            throw new BusinessException(TokenMessage.OTHER_TOKEN_ERROR);
+        }
+    }
+
+    @Override
+    public RefreshToken getTokenByUserId(Long userId) {
+
+        RefreshToken token = userMapper.getTokenByUserId(userId);
+        if (token == null){
+            log.error("getTokenByUserId-: userId:{}\n cases: {}", userId,CommonMessage.DATABASE_SELECT_EXCEPTION);
+            throw new BusinessException(TokenMessage.LOGIN_INVALID);
+        }
+        return token;
     }
 }

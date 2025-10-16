@@ -50,6 +50,15 @@ public class FileRepositoryImpl implements FileRepository {
     }
 
     @Override
+    public void iconSave(String url, int id) {
+        int i = fileMapper.updateIcon(url, id);
+        if (i < 1){
+            log.error("File-iconSave()-: case: {}",CommonMessage.DATABASE_UPDATE_EXCEPTION);
+            throw new BusinessException(BusinessMessage.FILE_DATA_UPDATE_ERROR);
+        }
+    }
+
+    @Override
     public Long getSkuIdProductId(String sn, String category) {
         Long id = switch (category){
             case "product" -> fileMapper.findProductIdBySn(sn);

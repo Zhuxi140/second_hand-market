@@ -83,14 +83,20 @@ public class FileServiceImpl implements FileService {
     @Override
     @Transactional(rollbackFor = {COSException.class, BusinessException.class})
     public void confirmFile(ConfirmDTO confirm) {
+        String sn = confirm.getSn();
+        String category = confirm.getCategory();
+        String mime = confirm.getMime();
 
-        if ("avatar".equals(confirm.getCategory())) {
-            String cosUrl = getCosUrl(confirm.getMime(), confirm.getSn());
-            fileRepository.avatarSave(cosUrl, confirm.getSn());
-        } else {
+        if ("avatar".equals(category)) {
+            String cosUrl = getCosUrl(mime, sn,category);
+            fileRepository.avatarSave(cosUrl, sn);
+        }else if("icon".equals(category)){
+            String cosUrl = getCosUrl(mime, sn,category);
+            fileRepository.iconSave(cosUrl, (Integer.parseInt(sn)));
+        }else {
 
-            Long spId = fileRepository.getSkuIdProductId(confirm.getSn(), confirm.getCategory());
-            File file = fileRepository.getOrderSort(spId, confirm.getCategory());
+            Long spId = fileRepository.getSkuIdProductId(sn, category);
+            File file = fileRepository.getOrderSort(spId, category);
 
             // 确认文件
             file.confirmFile(confirm, spId);
@@ -179,9 +185,9 @@ public class FileServiceImpl implements FileService {
         }
     }
 
-    private String getCosUrl(String mime, String sn) {
+    private String getCosUrl(String mime, String sn,String category) {
         String suffix = COSUtils.getMimeSfxPfx(mime, MimePart.suffix);
-        return COSUtils.generateFileName("avatar", suffix, sn);
+        return  COSUtils.generateFileName(category, suffix, sn);
     }
 
 }

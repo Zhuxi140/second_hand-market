@@ -1,10 +1,7 @@
 package com.zhuxi.common.handler;
 
 import com.zhuxi.common.constant.ValidationMessage;
-import com.zhuxi.common.exception.COSException;
-import com.zhuxi.common.exception.JwtException;
-import com.zhuxi.common.exception.LocationException;
-import com.zhuxi.common.exception.BusinessException;
+import com.zhuxi.common.exception.*;
 import com.zhuxi.common.result.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.BindingResult;
@@ -21,14 +18,6 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
-
-    @ExceptionHandler({JwtException.class, COSException.class})
-    public Result<String> handleException(LocationException e)
-    {
-        String message = e.getMessage();
-        log.error(message + "--location: {}", e.getLocation());
-        return Result.fail(message);
-    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public Result<String> handleException(MethodArgumentNotValidException e)
@@ -59,13 +48,13 @@ public class GlobalExceptionHandler {
     }
 
 
-    @ExceptionHandler(BusinessException.class)
-    public Result<String> handleException(BusinessException e)
+    @ExceptionHandler({BusinessException.class, PersistenceException.class, TokenException.class, COSException.class})
+    public Result<String> handleException(LocationException e)
     {
         String message = e.getMessage();
         String location = e.getLocation();
         log.error(message + "--location: {}", location);
-        return Result.fail(e.getCode(),message);
+        return Result.fail(message);
     }
 
     private String getLocation(Exception  e){

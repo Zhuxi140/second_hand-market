@@ -9,6 +9,9 @@ import lombok.Getter;
 
 import java.util.UUID;
 
+/**
+ * @author zhuxi
+ */
 @Getter
 public class UserAddress {
     private Long id;

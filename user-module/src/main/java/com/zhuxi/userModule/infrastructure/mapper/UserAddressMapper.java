@@ -1,10 +1,6 @@
 package com.zhuxi.userModule.infrastructure.mapper;
 
 import com.zhuxi.userModule.domain.address.model.UserAddress;
-import com.zhuxi.userModule.interfaces.dto.address.AdsBaseUpdate;
-import com.zhuxi.userModule.interfaces.dto.address.AdsLocationUpdate;
-import com.zhuxi.userModule.interfaces.dto.address.AdsRegisterDTO;
-import com.zhuxi.userModule.interfaces.dto.address.AdsUpdate;
 import com.zhuxi.userModule.interfaces.vo.address.UserAddressVO;
 import org.apache.ibatis.annotations.*;
 import java.util.List;

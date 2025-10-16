@@ -1,6 +1,6 @@
 package com.zhuxi.userModule.interfaces.vo.user;
 
-import com.zhuxi.userModule.domain.user.enums.Role;
+import com.zhuxi.common.enums.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -33,6 +33,9 @@ public class UserLoginVO {
     @Schema(description = "刷新令牌", example = "weadsadgvdsbfdgesfszhcvixuvklxcn...")
     private String refreshToken;
     
-    @Schema(description = "令牌过期时间", example = "1640995200000")
-    private Long expireTime;
+    @Schema(description = "刷新令牌过期时间", example = "1640995200000")
+    private Long refreshExpireTime;
+
+    @Schema(description = "访问令牌过期时间", example = "1640995200000")
+    private Long accessExpireTime;
 }

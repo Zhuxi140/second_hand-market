@@ -7,7 +7,7 @@ import javax.annotation.processing.Generated;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-10-09T09:19:56+0800",
+    date = "2025-10-16T16:58:04+0800",
     comments = "version: 1.5.5.Final, compiler: javac, environment: Java 18 (Oracle Corporation)"
 )
 public class UserConvertImpl implements UserConvert {
@@ -29,17 +29,23 @@ public class UserConvertImpl implements UserConvert {
     }
 
     @Override
-    public UserLoginVO toLoginVO(User user) {
-        if ( user == null ) {
+    public UserLoginVO toLoginVO(User user, String accessToken, Long accessExpireTime) {
+        if ( user == null && accessToken == null && accessExpireTime == null ) {
             return null;
         }
 
         UserLoginVO userLoginVO = new UserLoginVO();
 
-        userLoginVO.setUserSn( user.getUserSn() );
-        userLoginVO.setNickname( user.getNickname() );
-        userLoginVO.setRole( user.getRole() );
-        userLoginVO.setAvatar( user.getAvatar() );
+        if ( user != null ) {
+            userLoginVO.setUserSn( user.getUserSn() );
+            userLoginVO.setNickname( user.getNickname() );
+            userLoginVO.setRole( user.getRole() );
+            userLoginVO.setAvatar( user.getAvatar() );
+        }
+        userLoginVO.setAccessToken( accessToken );
+        userLoginVO.setAccessExpireTime( accessExpireTime );
+        userLoginVO.setRefreshToken( getRefreshToken(user) );
+        userLoginVO.setRefreshExpireTime( getRefreshExpireTime(user) );
 
         return userLoginVO;
     }

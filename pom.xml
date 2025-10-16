@@ -17,11 +17,11 @@
     <description>XianYu</description>
 
     <modules>
+        <module>common</module>
         <module>user-module</module>
         <module>order-module</module>
         <module>product-module</module>
         <module>Promotion-module</module>
-        <module>common</module>
         <module>main</module>
         <module>file-module</module>
     </modules>
@@ -31,6 +31,24 @@
     </properties>
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>com.zhuxi</groupId>
+                <artifactId>common</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+            </dependency>
+        <!--aspect-->
+            <dependency>
+                <groupId>org.aspectj</groupId>
+                <artifactId>aspectjrt</artifactId>
+                <version>1.9.24</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.aspectj</groupId>
+                <artifactId>aspectjweaver</artifactId>
+                <version>1.9.24</version>
+            </dependency>
+
 
             <!--lombook-->
             <dependency>

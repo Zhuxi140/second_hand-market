@@ -20,13 +20,13 @@ public class ConfirmDTO {
     @Schema(description = "唯一标识号", example = "FILE202401010001", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = ValidationMessage.NOT_NULL)
     private String sn;
-    @Schema(description = "文件归属类型", example = "product、avatar、spec", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "文件归属类型", example = "product、avatar、spec、icon", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = ValidationMessage.NOT_NULL)
     private String category;
     @Schema(description = "mime类型", example = "image/jpeg", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = ValidationMessage.NOT_NULL)
     private String mime;
-    @Schema(description = "类型(1封面 2商品详细图 3规格图),category为avatar时 该字段填多少都无所谓")
+    @Schema(description = "类型(1封面 2商品详细图 3规格图),category为avatar或icon时 该字段填多少都无所谓")
     @NotNull(message = ValidationMessage.NOT_NULL)
     private int fileType;
 }

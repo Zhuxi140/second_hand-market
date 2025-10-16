@@ -2,14 +2,15 @@ package com.zhuxi.userModule.interfaces.controller;
 
 
 import com.zhuxi.common.constant.BusinessMessage;
+import com.zhuxi.common.constant.TokenMessage;
 import com.zhuxi.common.result.Result;
+import com.zhuxi.common.result.TokenResult;
+import com.zhuxi.common.utils.JwtUtils;
 import com.zhuxi.userModule.application.assembler.UserConvert;
 import com.zhuxi.userModule.domain.user.model.User;
 import com.zhuxi.userModule.domain.user.service.UserService;
-import com.zhuxi.userModule.interfaces.dto.user.UserLoginDTO;
-import com.zhuxi.userModule.interfaces.dto.user.UserRegisterDTO;
-import com.zhuxi.userModule.interfaces.dto.user.UserUpdateInfoDTO;
-import com.zhuxi.userModule.interfaces.dto.user.UserUpdatePwDTO;
+import com.zhuxi.userModule.domain.user.valueObject.RefreshToken;
+import com.zhuxi.userModule.interfaces.dto.user.*;
 import com.zhuxi.userModule.interfaces.vo.user.UserLoginVO;
 import com.zhuxi.userModule.interfaces.vo.user.UserRegisterVO;
 import com.zhuxi.userModule.interfaces.vo.user.UserViewVO;
@@ -24,6 +25,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * 用户管理控制器
  * @author zhuxi
@@ -36,6 +40,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     
     private final UserService userService;
+    private final JwtUtils jwtUtils;
 
     @Operation(summary = "用户注册", description = "新用户注册接口，支持手机号注册")
     @ApiResponses(value = {
@@ -69,7 +74,14 @@ public class UserController {
         if (user == null){
             return Result.fail(BusinessMessage.USERNAME_OR_PASSWORD_ERROR);
         }
-        UserLoginVO vo = UserConvert.COVERT.toLoginVO(user);
+
+        // 生成访问令牌
+        Map<String,Object> data = new HashMap<>();
+        data.put("userSn", user.getUserSn());
+        data.put("role", user.getRole());
+        TokenResult tokenResult = jwtUtils.generateUserToken(data);
+        // 转换视图
+        UserLoginVO vo = UserConvert.COVERT.toLoginVO(user, tokenResult.getAccessToken(), tokenResult.getAccessExpireTime());
         return Result.success(vo);
     }
 
@@ -126,6 +138,29 @@ public class UserController {
             @PathVariable String userSn) {
         userService.updateInfo(update,userSn);
         return Result.success();
+    }
+
+    @Operation(summary = "刷新令牌", description = "刷新令牌接口，用于刷新访问令牌")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "刷新成功",
+                    content = @Content(schema = @Schema(implementation = TokenResult.class))),
+            @ApiResponse(responseCode = "500", description = "刷新失败，可能原因：刷新令牌错误、数据异常等")
+    })
+    @PostMapping("/refresh")
+    public Result<TokenResult> refresh(
+            @Parameter(description = "刷新令牌信息", required = true)
+            @RequestBody @Valid RefreshDTO refresh) {
+        RefreshToken token = userService.renewJwt(refresh);
+        if (token == null){
+            return Result.fail(TokenMessage.LOGIN_INVALID);
+        }
+        //构建访问令牌
+        Map<String,Object> data = new HashMap<>();
+        data.put("userSn", refresh.getUserSn());
+        data.put("role", token.getRole());
+        TokenResult tokenResult = jwtUtils.generateUserToken(data);
+
+        return Result.success(tokenResult);
     }
 
 }

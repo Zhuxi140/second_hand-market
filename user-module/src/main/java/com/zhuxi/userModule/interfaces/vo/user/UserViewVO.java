@@ -1,6 +1,6 @@
 package com.zhuxi.userModule.interfaces.vo.user;
 
-import com.zhuxi.userModule.domain.user.enums.Role;
+import com.zhuxi.common.enums.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;

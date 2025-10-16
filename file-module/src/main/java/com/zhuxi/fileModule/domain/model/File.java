@@ -13,14 +13,14 @@ import java.time.LocalDateTime;
 @Getter
 public class File {
 
-    private Long id;
+    private final Long id;
     private Long productId;
     private Long skuId;
     private String imageUrl;
-    private int imageType;        /*封面  详细图   规格图*/
+    private int imageType;
     private int sortOrder;
-    private LocalDateTime createAt;
-    private LocalDateTime updateAt;
+    private final LocalDateTime createAt;
+    private final LocalDateTime updateAt;
 
     private File(Long id, Long productId, Long skuId, String imageUrl, int imageType, int sortOrder, LocalDateTime createAt, LocalDateTime updateAt) {
         this.id = id;

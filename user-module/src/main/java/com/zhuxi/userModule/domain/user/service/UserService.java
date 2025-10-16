@@ -3,10 +3,8 @@ package com.zhuxi.userModule.domain.user.service;
 
 import com.zhuxi.common.result.Result;
 import com.zhuxi.userModule.domain.user.model.User;
-import com.zhuxi.userModule.interfaces.dto.user.UserLoginDTO;
-import com.zhuxi.userModule.interfaces.dto.user.UserRegisterDTO;
-import com.zhuxi.userModule.interfaces.dto.user.UserUpdateInfoDTO;
-import com.zhuxi.userModule.interfaces.dto.user.UserUpdatePwDTO;
+import com.zhuxi.userModule.domain.user.valueObject.RefreshToken;
+import com.zhuxi.userModule.interfaces.dto.user.*;
 import com.zhuxi.userModule.interfaces.vo.user.UserViewVO;
 
 /**
@@ -30,4 +28,7 @@ public interface UserService {
 
     // 修改密码
     void updatePassword(UserUpdatePwDTO updatePw, String userSn);
+
+    // 续期短时JWT令牌
+    RefreshToken renewJwt(RefreshDTO  refresh);
 }

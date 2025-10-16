@@ -33,6 +33,7 @@ public class COSUtils {
             case "avatar" -> String.format("avatar/%s.%s", sn, suffix);
             case "product" -> String.format("product/%s.%s", sn, suffix);
             case "spec" -> String.format("spec/%s.%s", sn, suffix);
+            case "icon" -> String.format("icon/%s.%s", sn, suffix);
             default -> throw new COSException("暂不支持该文件类型");
         };
 

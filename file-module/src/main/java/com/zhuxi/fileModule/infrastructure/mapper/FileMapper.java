@@ -21,9 +21,11 @@ public interface FileMapper {
 
     int update(File file);
 
-
     @Update("UPDATE user SET avatar = #{url} WHERE userSn = #{sn}")
     int updateAvatar(String url,String sn);
+
+    @Update("UPDATE product_sort SET icon_url = #{url} WHERE id = #{id}")
+    int updateIcon(String url,int id);
 
     @Select("SELECT id sku_id FROM product_spec WHERE sku_sn = #{sn}")
     Long findSkuIdBySn(String sn);

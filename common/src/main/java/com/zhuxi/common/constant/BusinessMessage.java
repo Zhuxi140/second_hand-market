@@ -1,5 +1,8 @@
 package com.zhuxi.common.constant;
 
+/**
+ * @author zhuxi
+ */
 public class BusinessMessage {
 
     public static final String USER_NOT_EXIST = "用户不存在";
@@ -22,4 +25,7 @@ public class BusinessMessage {
     public static final String DRAFT_NOT_NULL = "请选择保存草稿或直接发布";
     public static final String FILE_DATA_SAVE_ERROR = "文件信息写入失败，请稍后重试";
     public static final String FILE_DATA_UPDATE_ERROR = "文件信息更新失败，请稍后重试";
+    public static final String GET_CATEGORY_ERROR = "获取商品分类失败，请稍后重试";
+    public static final String SAVE_PRODUCT_ERROR = "发布商品失败，请稍后重试";
+    public static final String UPDATE_PRODUCT_ERROR = "修改商品失败，已为您保存草稿，请稍后重试";
 }
