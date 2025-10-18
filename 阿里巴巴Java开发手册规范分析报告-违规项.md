@@ -142,7 +142,7 @@ return null;  // 应该抛出异常而不是返回null
 | 序号 | 文件位置                    | 违规代码                  | 问题描述   | 规范要求           | 建议修改                                  | 优先级 |
 | ---- | --------------------------- | ------------------------- | ---------- | ------------------ | ----------------------------------------- | ------ |
 | 1    | `UserServiceImpl.java:67` | `user.getStatus() == 0` | 使用魔法值 | 定义为有意义的常量 | `user.getStatus() == UserStatus.LOCKED` | 中     |
-| 2    | `User.java:88`            | `this.status = 1;`      | 使用魔法值 | 定义为有意义的常量 | `this.status = UserStatus.ACTIVE`       | 中     |
+| 2    | `User.java:88`            | `this.userStatus = 1;`      | 使用魔法值 | 定义为有意义的常量 | `this.userStatus = UserStatus.ACTIVE`       | 中     |
 
 **详细说明**:
 
