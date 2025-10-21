@@ -1,6 +1,6 @@
 package com.zhuxi.common.utils;
 
-import com.zhuxi.common.constant.TokenMessage;
+import com.zhuxi.common.constant.AuthMessage;
 import com.zhuxi.common.enums.Role;
 import com.zhuxi.common.exception.TokenException;
 import com.zhuxi.common.properties.JwtProperties;
@@ -64,13 +64,43 @@ public class JwtUtils {
     }
 
     public Claims parseAdminToken(String token){
+        try {
+
         return adminJwtParser.parseSignedClaims( token)
                 .getPayload();
+        }catch(SignatureException e){
+            log.warn("Invalid JWT signature");
+            throw new TokenException(AuthMessage.LOGIN_INVALID);
+        }catch (ExpiredJwtException e){
+            log.warn("Expired JWT token");
+            throw new TokenException(AuthMessage.LOGIN_EXPIRED);
+        }catch (MalformedJwtException  e){
+            log.warn("Malformed JWT token");
+            throw new TokenException(AuthMessage.LOGIN_INVALID);
+        } catch(Exception e){
+            log.warn("other errors : {}",e.getMessage());
+            throw new TokenException(AuthMessage.OTHER_TOKEN_ERROR);
+        }
     }
 
     public Claims parseUserToken(String token){
+        try {
         return userJwtParser.parseSignedClaims( token)
                 .getPayload();
+
+        }catch(SignatureException e){
+            log.warn("Invalid JWT signature");
+            throw new TokenException(AuthMessage.LOGIN_INVALID);
+        }catch (ExpiredJwtException e){
+            log.warn("Expired JWT token");
+            throw new TokenException(AuthMessage.LOGIN_EXPIRED);
+        }catch (MalformedJwtException  e){
+            log.warn("Malformed JWT token");
+            throw new TokenException(AuthMessage.LOGIN_INVALID);
+        } catch(Exception e){
+            log.warn("other errors : {}",e.getMessage());
+            throw new TokenException(AuthMessage.OTHER_TOKEN_ERROR);
+        }
     }
 
     public void validateToken(String token, Role role){
@@ -84,16 +114,16 @@ public class JwtUtils {
             /*Claims payload = jws.getPayload();*/
         }catch(SignatureException e){
             log.warn("Invalid JWT signature");
-            throw new TokenException(TokenMessage.LOGIN_INVALID);
+            throw new TokenException(AuthMessage.LOGIN_INVALID);
         }catch (ExpiredJwtException e){
             log.warn("Expired JWT token");
-            throw new TokenException(TokenMessage.LOGIN_EXPIRED);
+            throw new TokenException(AuthMessage.LOGIN_EXPIRED);
         }catch (MalformedJwtException  e){
             log.warn("Malformed JWT token");
-            throw new TokenException(TokenMessage.LOGIN_INVALID);
+            throw new TokenException(AuthMessage.LOGIN_INVALID);
         } catch(Exception e){
             log.warn("other errors : {}",e.getMessage());
-            throw new TokenException(TokenMessage.OTHER_TOKEN_ERROR);
+            throw new TokenException(AuthMessage.OTHER_TOKEN_ERROR);
         }
     }
 }

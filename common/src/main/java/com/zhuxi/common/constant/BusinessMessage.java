@@ -13,7 +13,7 @@ public class BusinessMessage {
     public static final String USER_IS_LOCK = "用户被锁定";
     public static final String USERNAME_OR_PASSWORD_ERROR = "账号或者密码错误";
     public static final String USER_DATA_ERROR = "数据异常，请稍后刷新重试";
-    public static final String USER_OLD_PASSWORD = "旧密码错误";
+    public static final String USER_OLD_PASSWORD_ERROR = "旧密码错误";
     public static final String UPDATE_PW_ERROR = "修改密码失败,请稍后重试";
     public static final String REGISTER_ERROR = "注册失败,请稍后重试";
     public static final String UPDATE_INFO_ERROR = "修改失败,请稍后重试";

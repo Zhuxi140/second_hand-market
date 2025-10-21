@@ -24,8 +24,8 @@
             <if test="avatar != null and avatar != ''">
                 avatar = #{avatar},
             </if>
-            <if test="status != null">
-                status = #{status},
+            <if test="userStatus != null">
+                userStatus = #{userStatus},
             </if>
             <if test="role != null">
                 role = #{role},

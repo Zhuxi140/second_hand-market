@@ -1,5 +1,7 @@
 
-
+default:
+  default-user-avatar: http://localhost:8080/Default_avatar/default.jpeg
+  refresh-expire: 7  # 长期token时间  单位天
 
 spring:
   web:
@@ -9,10 +11,4 @@ spring:
 # MyBatis配置
 mybatis:
   mapper-locations: classpath:mapper/*.xml
-  type-handlers-package: com.zhuxi.userModule.infrastructure.typeHandler
-
-
-# 长期token
-refresh:
-  expiration: 7  #单位天
-
+  type-handlers-package: com.zhuxi.user.module.infrastructure.typehandler

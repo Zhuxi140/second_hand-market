@@ -1,7 +1,7 @@
 package com.zhuxi.common.interceptor;
 
 
-import com.zhuxi.common.constant.TokenMessage;
+import com.zhuxi.common.constant.AuthMessage;
 import com.zhuxi.common.enums.Role;
 import com.zhuxi.common.exception.TokenException;
 import com.zhuxi.common.utils.JwtUtils;
@@ -28,7 +28,7 @@ public class JwtInterceptorAdmin implements HandlerInterceptor {
 
         String jwt = request.getHeader("Authorization");
         if (jwt == null || jwt.isEmpty()){
-            throw new TokenException(TokenMessage.JWT_IS_NULL_OR_EMPTY);
+            throw new TokenException(AuthMessage.JWT_IS_NULL_OR_EMPTY);
         }
 
         String token = jwt.replaceAll("(?i)Bearer\\s*", "");

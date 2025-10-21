@@ -9,7 +9,8 @@ spring:
 # MyBatis配置
 mybatis:
   mapper-locations: classpath:mapper/*.xml
-  type-handlers-package: com.zhuxi.userModule.infrastructure.typeHandler
+  type-handlers-package: com.zhuxi.user.module.infrastructure.typehandler
+
 
 # 长期token
 refresh:

@@ -3,7 +3,9 @@ com\zhuxi\common\result\Result.class
 com\zhuxi\common\aspect\RoleAspect.class
 com\zhuxi\common\enums\Role.class
 com\zhuxi\common\constant\CommonMessage.class
+com\zhuxi\common\handler\AbsTypeHandler\EnumTypeHandler.class
 com\zhuxi\common\handler\ParamParseHandler.class
+com\zhuxi\common\handler\AbsTypeHandler\StringTypeHandler.class
 com\zhuxi\common\utils\JackSonUtils.class
 com\zhuxi\common\enums\MimePart.class
 com\zhuxi\common\exception\TokenException.class
@@ -17,9 +19,9 @@ com\zhuxi\common\utils\COSUtils.class
 com\zhuxi\common\constant\TokenMessage.class
 com\zhuxi\common\constant\BusinessMessage.class
 com\zhuxi\common\handler\GlobalExceptionHandler.class
+com\zhuxi\common\result\TokenResult.class
 com\zhuxi\common\constant\JwtConstant.class
 com\zhuxi\common\utils\BCryptUtils.class
 com\zhuxi\common\exception\BusinessException.class
-com\zhuxi\common\handler\AbstractValueObjectTypeHandler.class
 com\zhuxi\common\utils\JwtUtils.class
 com\zhuxi\common\interceptor\JwtInterceptorAdmin.class

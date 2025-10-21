@@ -1,3 +1,5 @@
 
 
 
+mybatis:
+  type-handlers-package: com.zhuxi.productModule.infrastructure.typehandler

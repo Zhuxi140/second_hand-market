@@ -1,0 +1,26 @@
+package com.zhuxi.user.module.infrastructure.typehandler;
+
+import com.zhuxi.common.handler.AbsTypeHandler.StringTypeHandler;
+import com.zhuxi.user.module.domain.user.valueObject.Username;
+import org.apache.ibatis.type.JdbcType;
+import org.apache.ibatis.type.MappedJdbcTypes;
+import org.apache.ibatis.type.MappedTypes;
+import org.springframework.stereotype.Component;
+
+/**
+ * @author zhuxi
+ */
+@MappedJdbcTypes(JdbcType.VARCHAR)
+@MappedTypes(Username.class)
+@Component
+public class UserNameTypeHandler extends StringTypeHandler<Username> {
+    @Override
+    protected Username fromString(String value) {
+        return new Username(value);
+    }
+
+    @Override
+    protected String toString(Username username) {
+        return username.getAccountName();
+    }
+}

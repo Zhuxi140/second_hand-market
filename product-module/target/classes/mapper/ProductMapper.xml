@@ -5,10 +5,10 @@
     <insert id="insert">
         INSERT INTO
             product( product_sn, seller_id, shop_id, title, description,
-                    category_id, price, condition_id, status, location, view_count, host_score, is_draft)
+                    category_id, price, condition_id, userStatus, location, view_count, host_score, is_draft)
         VALUES
             ( #{productSn}, #{sellerId}, #{shopId}, #{title}, #{description}, #{categoryId},
-             #{price}, #{conditionId}, #{status}, #{location}, #{viewCount}, #{hostScore}, #{isDraft})
+             #{price}, #{conditionId}, #{userStatus}, #{location}, #{viewCount}, #{hostScore}, #{isDraft})
     </insert>
     <update id="update">
         UPDATE
@@ -38,8 +38,8 @@
             <if test="conditionId != null">
                 condition_id = #{conditionId},
             </if>
-            <if test="status != null">
-                status = #{status},
+            <if test="userStatus != null">
+                userStatus = #{userStatus},
             </if>
             <if test="location != null">
                 location = #{location},
