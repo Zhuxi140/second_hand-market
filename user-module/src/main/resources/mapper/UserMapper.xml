@@ -2,7 +2,7 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.zhuxi.userModule.infrastructure.mapper.UserMapper">
+<mapper namespace="com.zhuxi.user.module.infrastructure.mapper.UserMapper">
     <update id="update">
         UPDATE user
         <set>
@@ -26,9 +26,6 @@
             </if>
             <if test="userStatus != null">
                 userStatus = #{userStatus},
-            </if>
-            <if test="role != null">
-                role = #{role},
             </if>
                 gender = #{gender}
         </set>

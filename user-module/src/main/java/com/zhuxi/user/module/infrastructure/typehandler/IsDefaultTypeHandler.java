@@ -1,6 +1,6 @@
 package com.zhuxi.user.module.infrastructure.typehandler;
 
-import com.zhuxi.common.handler.AbsTypeHandler.EnumTypeHandler;
+import com.zhuxi.common.interfaces.AbsTypeHandler.EnumTypeHandler;
 import com.zhuxi.user.module.domain.address.enums.IsDefault;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.MappedJdbcTypes;

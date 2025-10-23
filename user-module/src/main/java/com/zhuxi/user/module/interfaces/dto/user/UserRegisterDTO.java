@@ -1,9 +1,7 @@
 package com.zhuxi.user.module.interfaces.dto.user;
 
-import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.annotation.Nulls;
-import com.zhuxi.common.constant.ValidationMessage;
-import com.zhuxi.common.enums.Role;
+import com.zhuxi.common.shared.constant.ValidationMessage;
+import com.zhuxi.common.shared.enums.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;

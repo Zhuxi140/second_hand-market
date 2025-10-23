@@ -1,8 +1,8 @@
 package com.zhuxi.product.module.application.service;
 
-import com.zhuxi.common.constant.BusinessMessage;
-import com.zhuxi.common.exception.BusinessException;
-import com.zhuxi.common.exception.PersistenceException;
+import com.zhuxi.common.shared.constant.BusinessMessage;
+import com.zhuxi.common.shared.exception.BusinessException;
+import com.zhuxi.common.shared.exception.PersistenceException;
 import com.zhuxi.product.module.domain.enums.IsDraft;
 import com.zhuxi.product.module.domain.model.Product;
 import com.zhuxi.product.module.domain.repository.ProductRepository;

@@ -1,6 +1,6 @@
 package com.zhuxi.product.module.infrastructure.typehandler;
 
-import com.zhuxi.common.handler.AbsTypeHandler.StringTypeHandler;
+import com.zhuxi.common.interfaces.AbsTypeHandler.StringTypeHandler;
 import com.zhuxi.product.module.domain.objectValue.Title;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.MappedJdbcTypes;

@@ -10,3 +10,4 @@ qcloud:
   image-size: 10   # 单位MB
   base-url: https://${BUCKET_NAME}.cos.${REGION}.myqcloud.com
   view-expire-time: 60 # 单位分
+

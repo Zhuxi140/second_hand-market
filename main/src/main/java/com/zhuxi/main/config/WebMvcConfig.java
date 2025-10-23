@@ -1,7 +1,7 @@
 package com.zhuxi.main.config;
 
-import com.zhuxi.common.interceptor.JwtInterceptorAdmin;
-import com.zhuxi.common.interceptor.JwtInterceptorUser;
+import com.zhuxi.common.shared.interceptor.JwtInterceptorAdmin;
+import com.zhuxi.common.shared.interceptor.JwtInterceptorUser;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;

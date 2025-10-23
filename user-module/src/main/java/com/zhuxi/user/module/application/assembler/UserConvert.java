@@ -1,7 +1,7 @@
 package com.zhuxi.user.module.application.assembler;
 
-import com.zhuxi.common.constant.AuthMessage;
-import com.zhuxi.common.exception.TokenException;
+import com.zhuxi.common.shared.constant.AuthMessage;
+import com.zhuxi.common.shared.exception.TokenException;
 import com.zhuxi.user.module.domain.user.model.User;
 import com.zhuxi.user.module.domain.user.valueObject.RefreshToken;
 import com.zhuxi.user.module.interfaces.vo.user.UserLoginVO;

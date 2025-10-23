@@ -1,7 +1,7 @@
 package com.zhuxi.fileModule.domain.model;
 
-import com.zhuxi.common.enums.MimePart;
-import com.zhuxi.common.utils.COSUtils;
+import com.zhuxi.common.shared.enums.MimePart;
+import com.zhuxi.common.shared.utils.COSUtils;
 import com.zhuxi.fileModule.interfaces.dto.ConfirmDTO;
 import lombok.Getter;
 

@@ -1,8 +1,8 @@
 package com.zhuxi.user.module.application.service;
 
 
-import com.zhuxi.common.constant.BusinessMessage;
-import com.zhuxi.common.exception.BusinessException;
+import com.zhuxi.common.shared.constant.BusinessMessage;
+import com.zhuxi.common.shared.exception.BusinessException;
 import com.zhuxi.user.module.domain.address.enums.IsDefault;
 import com.zhuxi.user.module.domain.address.model.UserAddress;
 import com.zhuxi.user.module.domain.address.repository.UserAddressRepository;

@@ -1,12 +1,22 @@
 package com.zhuxi.user.module.domain.user.repository;
 
+import com.zhuxi.common.shared.enums.Role;
 import com.zhuxi.user.module.domain.user.model.User;
 import com.zhuxi.user.module.domain.user.valueObject.RefreshToken;
 import com.zhuxi.user.module.interfaces.vo.user.UserViewVO;
 
+/**
+ * @author zhuxi
+ */
 public interface UserRepository {
 
     void save(User user);
+
+    void saveRole(Long userId, int roleId);
+
+    void checkRoleExist(int roleId);
+
+    Role getRole(Long userId);
 
     int checkUsernameExist(String  username);
 
@@ -24,6 +34,7 @@ public interface UserRepository {
 
     RefreshToken getTokenByUserId(Long userId);
 
+    RefreshToken getFreshToken(Long userId);
 
 
 }

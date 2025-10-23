@@ -1,11 +1,12 @@
 package com.zhuxi.user.module.application.service;
 
 
-import com.zhuxi.common.constant.BusinessMessage;
-import com.zhuxi.common.constant.AuthMessage;
-import com.zhuxi.common.exception.BusinessException;
-import com.zhuxi.common.exception.TokenException;
-import com.zhuxi.common.utils.BCryptUtils;
+import com.zhuxi.common.shared.constant.BusinessMessage;
+import com.zhuxi.common.shared.constant.AuthMessage;
+import com.zhuxi.common.shared.enums.Role;
+import com.zhuxi.common.shared.exception.BusinessException;
+import com.zhuxi.common.shared.exception.TokenException;
+import com.zhuxi.common.shared.utils.BCryptUtils;
 import com.zhuxi.user.module.application.command.RegisterCommand;
 import com.zhuxi.user.module.domain.user.enums.UserStatus;
 import com.zhuxi.user.module.domain.user.model.User;
@@ -69,6 +70,11 @@ public class UserServiceImpl implements UserService {
 
         //写入
         repository.save(user);
+        //检测角色是否存在
+        repository.checkRoleExist(user.getRole().getId());
+        //写入角色
+        repository.saveRole(user.getId(),user.getRole().getId());
+
         return user;
     }
 
@@ -92,17 +98,21 @@ public class UserServiceImpl implements UserService {
         );
 
         if (outcome){
-            // 构造长期令牌
-            RefreshToken token = new RefreshToken(
-                    null,
-                    user.getId(),
-                    UUID.randomUUID().toString(),
-                    LocalDateTime.now().plusDays(defaultProperties.getRefreshExpire()),
-                    null,
-                    null,
-                    null
-            );
-            repository.saveToken(token);
+            RefreshToken freshToken = repository.getFreshToken(user.getId());
+            RefreshToken token;
+            if ( freshToken ==  null) {
+                // 构造长期令牌
+                 token = new RefreshToken(
+                        null,
+                        user.getId(),
+                        UUID.randomUUID().toString(),
+                        LocalDateTime.now().plusDays(defaultProperties.getRefreshExpire()),
+                        null,
+                        null
+                );
+                repository.saveToken(token);
+            }
+            token = freshToken;
             user.login(token);
 
             return user;
@@ -191,6 +201,10 @@ public class UserServiceImpl implements UserService {
             log.warn("刷新令牌已过期");
             throw new TokenException(AuthMessage.LOGIN_EXPIRED);
         }
+
+        // 获取角色
+        Role role = repository.getRole(userId);
+        token.setRole(role);
 
         return token;
     }

@@ -1,25 +1,19 @@
 package com.zhuxi.user.module.domain.user.model;
 
-import com.zhuxi.common.constant.BusinessMessage;
-import com.zhuxi.common.enums.Role;
-import com.zhuxi.common.exception.BusinessException;
-import com.zhuxi.common.utils.BCryptUtils;
+import com.zhuxi.common.shared.constant.BusinessMessage;
+import com.zhuxi.common.shared.enums.Role;
+import com.zhuxi.common.shared.exception.BusinessException;
 import com.zhuxi.user.module.application.command.RegisterCommand;
 import com.zhuxi.user.module.domain.user.enums.UserStatus;
 import com.zhuxi.user.module.domain.user.valueObject.Email;
 import com.zhuxi.user.module.domain.user.valueObject.Phone;
 import com.zhuxi.user.module.domain.user.valueObject.RefreshToken;
 import com.zhuxi.user.module.domain.user.valueObject.Username;
-import com.zhuxi.user.module.infrastructure.config.DefaultProperties;
-import com.zhuxi.user.module.interfaces.dto.user.UserLoginDTO;
 import com.zhuxi.user.module.interfaces.dto.user.UserRegisterDTO;
 import com.zhuxi.user.module.interfaces.dto.user.UserUpdateInfoDTO;
-import com.zhuxi.user.module.interfaces.dto.user.UserUpdatePwDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
-import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * 用户领域模型

@@ -1,6 +1,6 @@
 package com.zhuxi.fileModule.interfaces.controller;
 
-import com.zhuxi.common.result.Result;
+import com.zhuxi.common.interfaces.result.Result;
 import com.zhuxi.fileModule.interfaces.dto.ConfirmDTO;
 import com.zhuxi.fileModule.interfaces.dto.UploadDTO;
 import com.zhuxi.fileModule.application.service.FileServiceImpl;
@@ -12,7 +12,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;

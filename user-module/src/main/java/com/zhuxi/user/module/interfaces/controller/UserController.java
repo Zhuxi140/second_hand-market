@@ -1,13 +1,13 @@
 package com.zhuxi.user.module.interfaces.controller;
 
 
-import com.zhuxi.common.annotation.PermissionCheck;
-import com.zhuxi.common.constant.BusinessMessage;
-import com.zhuxi.common.constant.AuthMessage;
-import com.zhuxi.common.enums.Role;
-import com.zhuxi.common.result.Result;
-import com.zhuxi.common.result.TokenResult;
-import com.zhuxi.common.utils.JwtUtils;
+import com.zhuxi.common.shared.annotation.PermissionCheck;
+import com.zhuxi.common.shared.constant.BusinessMessage;
+import com.zhuxi.common.shared.constant.AuthMessage;
+import com.zhuxi.common.shared.enums.Role;
+import com.zhuxi.common.interfaces.result.Result;
+import com.zhuxi.common.interfaces.result.TokenResult;
+import com.zhuxi.common.shared.utils.JwtUtils;
 import com.zhuxi.user.module.application.assembler.UserConvert;
 import com.zhuxi.user.module.domain.user.model.User;
 import com.zhuxi.user.module.domain.user.service.UserService;
@@ -25,6 +25,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -34,6 +35,7 @@ import java.util.Map;
  * 用户管理控制器
  * @author zhuxi
  */
+@Slf4j
 @Tag(name = "用户管理", description = "用户注册、登录、信息管理等相关接口")
 @RestController
 @RequestMapping("/user")
@@ -73,6 +75,7 @@ public class UserController {
             @Parameter(description = "用户登录信息", required = true)
             @RequestBody @Valid UserLoginDTO login){
         User user = userService.login(login);
+
         // 生成访问令牌
         Map<String,Object> data = new HashMap<>();
         data.put("userSn", user.getUserSn());
@@ -100,7 +103,7 @@ public class UserController {
             @ApiResponse(responseCode = "500", description = "获取失败，可能原因：用户不存在、数据异常等")
     })
     @GetMapping("/me/getInfo/{userSn}")
-    @PermissionCheck(Role = Role.user,enableDataOwnership = true)
+    @PermissionCheck(Role = Role.user,permission = "user:getInfo", enableDataOwnership = true)
     public Result<UserViewVO> getUserInfo(
             @Parameter(description = "用户编号", required = true)
             @PathVariable String userSn) {
@@ -114,7 +117,7 @@ public class UserController {
             @ApiResponse(responseCode = "500", description = "修改失败，可能原因：旧密码错误、修改密码失败等")
     })
     @PutMapping("/me/{userSn}/password")
-    @PermissionCheck(Role = Role.user,enableDataOwnership = true)
+    @PermissionCheck(Role = Role.user,permission = "user:changePassword", enableDataOwnership = true)
     public Result<String> updatePassword(
             @Parameter(description = "密码修改信息", required = true)
             @RequestBody @Valid UserUpdatePwDTO updatePw,
@@ -131,7 +134,7 @@ public class UserController {
             @ApiResponse(responseCode = "500", description = "更新失败，可能原因：参数错误、修改失败等")
     })
     @PutMapping("/me/update/{userSn}")
-    @PermissionCheck(Role = Role.user,enableDataOwnership = true)
+    @PermissionCheck(Role = Role.user,permission = "user:updateInfo", enableDataOwnership = true)
     public Result<String> update(
             @Parameter(description = "用户信息更新数据", required = true)
             @RequestBody @Valid UserUpdateInfoDTO update,
@@ -147,7 +150,6 @@ public class UserController {
                     content = @Content(schema = @Schema(implementation = TokenResult.class))),
             @ApiResponse(responseCode = "500", description = "刷新失败，可能原因：刷新令牌错误、数据异常等")
     })
-    @PermissionCheck(Role = Role.user,enableDataOwnership = true)
     @PostMapping("/refresh")
     public Result<TokenResult> refresh(
             @Parameter(description = "刷新令牌信息", required = true)

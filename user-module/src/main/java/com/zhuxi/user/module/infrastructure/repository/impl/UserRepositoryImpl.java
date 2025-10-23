@@ -1,9 +1,10 @@
 package com.zhuxi.user.module.infrastructure.repository.impl;
 
-import com.zhuxi.common.constant.CommonMessage;
-import com.zhuxi.common.constant.BusinessMessage;
-import com.zhuxi.common.constant.AuthMessage;
-import com.zhuxi.common.exception.BusinessException;
+import com.zhuxi.common.shared.constant.CommonMessage;
+import com.zhuxi.common.shared.constant.BusinessMessage;
+import com.zhuxi.common.shared.constant.AuthMessage;
+import com.zhuxi.common.shared.enums.Role;
+import com.zhuxi.common.shared.exception.BusinessException;
 import com.zhuxi.user.module.domain.user.model.User;
 import com.zhuxi.user.module.domain.user.repository.UserRepository;
 import com.zhuxi.user.module.domain.user.valueObject.RefreshToken;
@@ -38,6 +39,29 @@ public class UserRepositoryImpl implements UserRepository {
                 throw new BusinessException(BusinessMessage.UPDATE_INFO_ERROR);
             }
         }
+    }
+
+    @Override
+    public void saveRole(Long userId, int roleId) {
+        int i = userMapper.saveRole(userId, roleId);
+        if (i < 1){
+            log.error("saveRole()-error: userId:{},roleId:{}\n cases: {}", userId,roleId,CommonMessage.DATABASE_INSERT_EXCEPTION);
+            throw new BusinessException(BusinessMessage.REGISTER_ERROR);
+        }
+    }
+
+    @Override
+    public void checkRoleExist(int roleId) {
+        Integer i = userMapper.checkRoleExist(roleId);
+        if (i == null || i <= 0){
+            log.error("checkRoleExist-error: roleId:{}\n cases: {}", roleId,CommonMessage.DATABASE_SELECT_EXCEPTION);
+            throw new BusinessException(BusinessMessage.ROLE_NOT_EXIST);
+        }
+    }
+
+    @Override
+    public Role getRole(Long userId) {
+        return userMapper.getRole(userId);
     }
 
     //判断用户名是否已存在
@@ -120,4 +144,10 @@ public class UserRepositoryImpl implements UserRepository {
         }
         return token;
     }
+
+    @Override
+    public RefreshToken getFreshToken(Long userId) {
+        return userMapper.checkFreshTokenExist(userId);
+    }
+
 }

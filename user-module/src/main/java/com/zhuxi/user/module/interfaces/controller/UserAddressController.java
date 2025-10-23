@@ -1,10 +1,10 @@
 package com.zhuxi.user.module.interfaces.controller;
 
 
-import com.zhuxi.common.annotation.PermissionCheck;
-import com.zhuxi.common.constant.BusinessMessage;
-import com.zhuxi.common.enums.Role;
-import com.zhuxi.common.result.Result;
+import com.zhuxi.common.shared.annotation.PermissionCheck;
+import com.zhuxi.common.shared.constant.BusinessMessage;
+import com.zhuxi.common.shared.enums.Role;
+import com.zhuxi.common.interfaces.result.Result;
 import com.zhuxi.user.module.domain.address.service.UserAddressService;
 import com.zhuxi.user.module.interfaces.dto.address.AdsRegisterDTO;
 import com.zhuxi.user.module.interfaces.dto.address.AdsUpdate;
@@ -43,7 +43,7 @@ public class UserAddressController {
             @ApiResponse(responseCode = "500", description = "添加失败，可能原因：地址数量已达上限、数据异常等")
     })
     @PostMapping("/{userSn}/addresses")
-    @PermissionCheck(Role = Role.user, enableDataOwnership = true)
+    @PermissionCheck(Role = Role.user,permission = "user:addAddress",enableDataOwnership = true)
     public Result<String> insert(
             @Parameter(description = "地址信息", required = true)
             @RequestBody @Valid AdsRegisterDTO address,
@@ -63,7 +63,7 @@ public class UserAddressController {
             @ApiResponse(responseCode = "500", description = "删除失败，可能原因：地址不存在、数据异常等")
     })
     @DeleteMapping("/{userSn}/addresses/{addressSn}")
-    @PermissionCheck(Role = Role.user, enableDataOwnership = true)
+    @PermissionCheck(Role = Role.user,permission = "user:delAddress", enableDataOwnership = true)
     public Result<String> deleteById(
             @Parameter(description = "地址编号", required = true)
             @PathVariable String addressSn,
@@ -79,7 +79,7 @@ public class UserAddressController {
             @ApiResponse(responseCode = "500", description = "更新失败，可能原因：地址不存在、修改地址失败等")
     })
     @PutMapping("/{userSn}/addresses/{addressSn}")
-    @PermissionCheck(Role = Role.user, enableDataOwnership = true)
+    @PermissionCheck(Role = Role.user,permission = "user:updateAddress", enableDataOwnership = true)
     public Result<String> update(
             @Parameter(description = "地址更新信息", required = true)
             @RequestBody AdsUpdate userAddress,
@@ -100,7 +100,7 @@ public class UserAddressController {
             @ApiResponse(responseCode = "500", description = "获取失败，可能原因：数据异常等")
     })
     @GetMapping("/{userSn}/addresses")
-    @PermissionCheck(Role = Role.user, enableDataOwnership = true)
+    @PermissionCheck(Role = Role.user,permission = "user:getAddressList", enableDataOwnership = true)
     public Result<List<UserAddressVO>> getListAddress(@PathVariable String userSn) {
         List<UserAddressVO> list = userAddressService.getListAddress(userSn);
         if (list != null){

@@ -1,6 +1,6 @@
 package com.zhuxi.user.module.infrastructure.typehandler;
 
-import com.zhuxi.common.handler.AbsTypeHandler.StringTypeHandler;
+import com.zhuxi.common.interfaces.AbsTypeHandler.StringTypeHandler;
 import com.zhuxi.user.module.domain.user.valueObject.Phone;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.MappedJdbcTypes;
