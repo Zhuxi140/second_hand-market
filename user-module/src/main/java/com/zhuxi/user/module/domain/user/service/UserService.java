@@ -17,7 +17,7 @@ public interface UserService {
     User login(UserLoginDTO login);
     
     // 登出
-    void logout();
+    void logout(String userSn, String token);
 
     // 更新用户
     void updateInfo(UserUpdateInfoDTO user, String userSn);
@@ -26,7 +26,7 @@ public interface UserService {
     UserViewVO getUserInfo(String userSn);
 
     // 修改密码
-    void updatePassword(UserUpdatePwDTO updatePw, String userSn);
+    void updatePassword(UserUpdatePwDTO updatePw, String userSn,String token);
 
     // 续期短时JWT令牌
     RefreshToken renewJwt(RefreshDTO refresh);

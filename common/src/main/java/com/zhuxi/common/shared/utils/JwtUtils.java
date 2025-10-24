@@ -103,15 +103,36 @@ public class JwtUtils {
         }
     }
 
-    public void validateToken(String token, Role role){
+    /**
+     * 验证token
+     * @param token jwt-token
+     * @param role  角色分类
+     * @return token剩余时间 单位:毫秒
+     */
+    public long validateToken(String token, Role role){
         try {
             Jws<Claims> jws;
             if (role == Role.admin || role == Role.super_admin){
                 jws = adminJwtParser.parseSignedClaims(token);
+                Claims payload = jws.getPayload();
+                Date expiration = payload.getExpiration();
+                long expire = expiration.getTime() - System.currentTimeMillis();
+                if (expire <= 0) {
+                    log.warn("Expired JWT token");
+                    throw new TokenException(AuthMessage.LOGIN_EXPIRED);
+                }
+                return expire;
             }else if(role == Role.user || role == Role.Merchant){
                 jws = userJwtParser.parseSignedClaims(token);
+                Claims payload = jws.getPayload();
+                Date expiration = payload.getExpiration();
+                long expire = expiration.getTime() - System.currentTimeMillis();
+                if (expire <= 0) {
+                    log.warn("Expired JWT token");
+                    throw new TokenException(AuthMessage.LOGIN_EXPIRED);
+                }
+                return expire;
             }
-            /*Claims payload = jws.getPayload();*/
         }catch(SignatureException e){
             log.warn("Invalid JWT signature");
             throw new TokenException(AuthMessage.LOGIN_INVALID);
@@ -125,5 +146,6 @@ public class JwtUtils {
             log.warn("other errors : {}",e.getMessage());
             throw new TokenException(AuthMessage.OTHER_TOKEN_ERROR);
         }
+        return 0;
     }
 }

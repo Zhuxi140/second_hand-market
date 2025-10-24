@@ -7,15 +7,18 @@ import com.zhuxi.common.shared.enums.Role;
 import com.zhuxi.common.shared.exception.BusinessException;
 import com.zhuxi.common.shared.exception.TokenException;
 import com.zhuxi.common.shared.utils.BCryptUtils;
+import com.zhuxi.common.shared.utils.JwtUtils;
 import com.zhuxi.user.module.application.command.RegisterCommand;
 import com.zhuxi.user.module.domain.user.enums.UserStatus;
 import com.zhuxi.user.module.domain.user.model.User;
 import com.zhuxi.user.module.domain.user.repository.UserRepository;
+import com.zhuxi.user.module.domain.user.service.UserCacheService;
 import com.zhuxi.user.module.domain.user.service.UserService;
 import com.zhuxi.user.module.domain.user.valueObject.RefreshToken;
 import com.zhuxi.user.module.infrastructure.config.DefaultProperties;
 import com.zhuxi.user.module.interfaces.dto.user.*;
 import com.zhuxi.user.module.interfaces.vo.user.UserViewVO;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -39,6 +43,8 @@ public class UserServiceImpl implements UserService {
     private final BCryptUtils bCryptUtils;
     private static final ThreadLocalRandom RANDOM = ThreadLocalRandom.current();
     private final DefaultProperties defaultProperties;
+    private final UserCacheService userCacheService;
+    private final JwtUtils jwtUtils;
 
     /**
      * 注册用户
@@ -78,7 +84,7 @@ public class UserServiceImpl implements UserService {
         return user;
     }
 
-/**
+    /**
      * 登录
      */
 
@@ -121,14 +127,25 @@ public class UserServiceImpl implements UserService {
         throw new BusinessException(BusinessMessage.USERNAME_OR_PASSWORD_ERROR);
     }
 
-/*
-*
-     * 登出
-     * 待完善 : 登出逻辑(redis)
-
-*/
+    /*
+    * 登出
+    */
     @Override
-    public void logout() {
+    public void logout(String userSn, String token) {
+        token = token.replaceAll("(?i)Bearer\\s*", "");
+
+        // 验证令牌 并获取剩余时间
+        long expire = jwtUtils.validateToken(token, Role.user);
+
+        // 验证长时token存在  若存在将其逻辑删除
+        Long userId = repository.getUserId(userSn);
+        Long id = repository.checkFreshTokenExist(userId);
+        if (id != null){
+            repository.deleteToken(id);
+        }
+
+        // 将jwt-token写入redis
+        userCacheService.saveBlockList(token, Role.user,expire);
     }
 
     /**
@@ -163,7 +180,7 @@ public class UserServiceImpl implements UserService {
     */
     @Override
     @Transactional(rollbackFor = BusinessException.class)
-    public void updatePassword(UserUpdatePwDTO updatePw, String userSn) {
+    public void updatePassword(UserUpdatePwDTO updatePw, String userSn,String token) {
 
         // 检查用户状态
         User user = repository.getUserIdRoleStatusBySn(userSn);
@@ -174,13 +191,13 @@ public class UserServiceImpl implements UserService {
         if (!result){
             throw new BusinessException(BusinessMessage.USER_OLD_PASSWORD_ERROR);
         }
+
+        // 异步清除用户登录状态
+        CompletableFuture.runAsync(() -> logout(userSn,token));
+
         String hashPassword = bCryptUtils.hashCode(updatePw.getNewPassword());
-
-        //写入
+        //写入新密码
         repository.updatePw(user.getId(),hashPassword);
-
-        // 登出
-        logout();
     }
 
     /**
@@ -220,5 +237,6 @@ public class UserServiceImpl implements UserService {
                 "$2a$10$C8PO6p4iq8rnJhV0sYpNNO9WLj96hSp5tmTEPQfLtyf9hS4e/or3W"
         );
     }
+
 
 }

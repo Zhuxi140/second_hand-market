@@ -7,6 +7,7 @@ import com.zhuxi.common.infrastructure.properties.JwtProperties;
 import com.zhuxi.common.interfaces.result.PermissionInfo;
 import com.zhuxi.common.interfaces.result.PermissionInfoOne;
 import com.zhuxi.common.shared.constant.RedisMessage;
+import com.zhuxi.common.shared.enums.Role;
 import com.zhuxi.common.shared.exception.CacheException;
 import com.zhuxi.common.shared.utils.RedisUtils;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,9 @@ public class PermissionCacheServiceImpl implements PermissionCacheService {
     private final PermissionCacheRepository repository;
     private final JwtProperties jwtProperties;
 
+    /**
+     * 获取用户权限信息
+     */
     @Override
     @Transactional(readOnly = true,propagation = Propagation.SUPPORTS)
     public PermissionInfo getPermissionInfo(String userSn) {
@@ -55,6 +59,18 @@ public class PermissionCacheServiceImpl implements PermissionCacheService {
         asyncSaveCache(key,permissionInfo1);
 
         return permissionInfo1;
+    }
+
+    /**
+     * 检查JwtToken是否在黑名单中
+     */
+    @Override
+    public boolean checkBlackToken(String token, Role role) {
+        if (Role.user.equals(role) || Role.Merchant.equals(role)){
+            return redisUtils.ssGetValue(keys.getBlockUserTokenKey() + token) != null;
+        }else{
+            return redisUtils.ssGetValue(keys.getBlockAdminTokenKey() + token) != null;
+        }
     }
 
     /**

@@ -12,6 +12,7 @@ jwt:
 
 cache:
   key:
-    token-key: "token:user:"
+    block-user-token-key: "token:black:user:"
+    block-admin-token-key: "token:black:admin:"
     user-permission-key: "user:permission:"
     admin-permission-key: "admin:permission:"

@@ -35,6 +35,10 @@ public class RedisUtils {
         return ssValueOperations.get(key);
     }
 
+    public void ssSetValue(String key, String value, long expireTime, TimeUnit timeUnit){
+        ssValueOperations.set(key,value, expireTime, timeUnit);
+    }
+
     public <T> T soGetValue(String key,Class<T> type) {
         Object value = soValueOperations.get(key);
         return type.cast(value);

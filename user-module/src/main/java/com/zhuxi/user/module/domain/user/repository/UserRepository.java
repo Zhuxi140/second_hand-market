@@ -36,5 +36,9 @@ public interface UserRepository {
 
     RefreshToken getFreshToken(Long userId);
 
+    Long checkFreshTokenExist(Long userId);
+
+    void deleteToken(Long tokenId);
+
 
 }

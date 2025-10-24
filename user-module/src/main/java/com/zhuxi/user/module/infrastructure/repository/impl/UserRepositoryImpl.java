@@ -118,7 +118,7 @@ public class UserRepositoryImpl implements UserRepository {
     public Long getUserId(String userSn) {
         Long userId = userMapper.getUserId(userSn);
         if (userId == null){
-            log.error("userSn:{}-\ngetUserId-case:{}",userSn,CommonMessage.DATABASE_SELECT_EXCEPTION);
+            log.error("getUserId-error:userSn:{}-\ngetUserId-case:{}",userSn,CommonMessage.DATABASE_SELECT_EXCEPTION);
             throw new BusinessException(BusinessMessage.USER_DATA_ERROR);
         }
         return userId;
@@ -129,7 +129,7 @@ public class UserRepositoryImpl implements UserRepository {
     public void saveToken(RefreshToken token) {
         int result = userMapper.saveToken(token);
         if (result < 1){
-            log.error("用户刷新令牌保存失败-: id:{}\n cases: {}", token.getId(),CommonMessage.DATABASE_INSERT_EXCEPTION);
+            log.error("saveToken-error-: id:{}\n cases: {}", token.getId(),CommonMessage.DATABASE_INSERT_EXCEPTION);
             throw new BusinessException(AuthMessage.OTHER_TOKEN_ERROR);
         }
     }
@@ -139,7 +139,7 @@ public class UserRepositoryImpl implements UserRepository {
 
         RefreshToken token = userMapper.getTokenByUserId(userId);
         if (token == null){
-            log.error("getTokenByUserId-: userId:{}\n cases: {}", userId,CommonMessage.DATABASE_SELECT_EXCEPTION);
+            log.error("getTokenByUserId-error: userId:{}\n cases: {}", userId,CommonMessage.DATABASE_SELECT_EXCEPTION);
             throw new BusinessException(AuthMessage.LOGIN_INVALID);
         }
         return token;
@@ -147,7 +147,21 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public RefreshToken getFreshToken(Long userId) {
+        return userMapper.getFreshToken(userId);
+    }
+
+    @Override
+    public Long checkFreshTokenExist(Long userId) {
         return userMapper.checkFreshTokenExist(userId);
+    }
+
+    @Override
+    public void deleteToken(Long tokenId) {
+        int i = userMapper.deleteToken(tokenId);
+        if (i != 1){
+            log.error("deleteToken-error: tokenId:{} case:{}", tokenId,CommonMessage.DATABASE_UPDATE_EXCEPTION);
+            throw new BusinessException(AuthMessage.LOGIN_INVALID);
+        }
     }
 
 }

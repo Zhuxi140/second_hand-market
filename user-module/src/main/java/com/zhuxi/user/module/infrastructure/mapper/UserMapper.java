@@ -105,7 +105,11 @@ public interface UserMapper {
     RefreshToken getTokenByUserId(Long userId);
 
     @Select("SELECT id, user_id, token_hash, expires_at, ip_address, user_agent FROM refresh_token WHERE is_delete != 1 and user_id = #{userId} and now() <= expires_at")
-    RefreshToken checkFreshTokenExist(Long userId);
+    RefreshToken getFreshToken(Long userId);
 
+    @Select("SELECT id FROM refresh_token WHERE user_id= #{userId} and is_delete != 1")
+    Long checkFreshTokenExist(Long userId);
 
+    @Update("UPDATE refresh_token SET is_delete= 1 WHERE id = #{tokenId}")
+    int deleteToken(Long tokenId);
 }

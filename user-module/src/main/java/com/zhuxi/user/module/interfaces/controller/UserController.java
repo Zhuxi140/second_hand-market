@@ -90,9 +90,9 @@ public class UserController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "登出成功")
     })
-    @PostMapping("/logout")
-    public Result<String> logout() {
-        userService.logout();
+    @PostMapping("/logout/{userSn}")
+    public Result<String> logout(@PathVariable String userSn,@RequestHeader("Authorization") String token) {
+        userService.logout(userSn, token);
         return Result.success();
     }
 
@@ -122,9 +122,11 @@ public class UserController {
             @Parameter(description = "密码修改信息", required = true)
             @RequestBody @Valid UserUpdatePwDTO updatePw,
             @Parameter(description = "用户编号", required = true)
-            @PathVariable String userSn
+            @PathVariable String userSn,
+            @RequestHeader("Authorization")
+            String token
     ){
-        userService.updatePassword(updatePw, userSn);
+        userService.updatePassword(updatePw, userSn,token);
         return Result.success();
     }
 
