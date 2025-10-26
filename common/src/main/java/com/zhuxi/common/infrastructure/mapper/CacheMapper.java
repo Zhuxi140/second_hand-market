@@ -15,10 +15,10 @@ public interface CacheMapper {
     @Select("""
     SELECT
     p.code AS permissionCode
-    FROM permission p JOIN user_permission up ON p.id = up.permission_id
+    FROM permission p JOIN user_ban_permission up ON p.id = up.permission_id
     WHERE up.user_id = #{userId}
     """)
-    List<String> getUserPermissionInfo(Long userId);
+    List<String> getBanedPermissionInfo(Long userId);
 
 
     @Select("""

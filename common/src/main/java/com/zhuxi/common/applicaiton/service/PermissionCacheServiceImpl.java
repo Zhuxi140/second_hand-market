@@ -89,21 +89,17 @@ public class PermissionCacheServiceImpl implements PermissionCacheService {
     private PermissionInfo loadDataBase(Long userId){
     try {
         // 获取用户权限、角色权限以及用户角色
-        CompletableFuture<List<String>> userPermissionFuture = CompletableFuture
-                .supplyAsync(() -> repository.getUserPermissionInfo(userId));
+        CompletableFuture<List<String>> banedPermissionFuture = CompletableFuture
+                .supplyAsync(() -> repository.getBanedPermissionInfo(userId));
         CompletableFuture<List<PermissionInfoOne>> rolePermissionFuture = CompletableFuture
                 .supplyAsync(() -> repository.getRolePermissionInfo(userId));
 
         // 合并权限列表
-        List<String> userPermissionCodes = userPermissionFuture.get();
+        List<String> baned = banedPermissionFuture.get();
         List<PermissionInfoOne> rolePermissionInfo = rolePermissionFuture.get();
-        for (PermissionInfoOne permissionInfoOne : rolePermissionInfo){
-            userPermissionCodes.add(permissionInfoOne.getPermissionCode());
-        }
-        PermissionInfo allPermissionInfo = new PermissionInfo(userId, rolePermissionInfo.get(0).getRole(), userPermissionCodes);
 
         //去除重复权限
-        PermissionInfo permissionInfo = delDuplicates(allPermissionInfo);
+        PermissionInfo permissionInfo = removeBanedPermission(baned,rolePermissionInfo);
 
         permissionInfo.setUserId(userId);
         return permissionInfo;
@@ -114,15 +110,17 @@ public class PermissionCacheServiceImpl implements PermissionCacheService {
     }
 
     /**
-     * 去除重复权限
+     * 去除被禁用权限
      */
-    private PermissionInfo delDuplicates(PermissionInfo allPermissionInfo){
-        Set<String> mergeCodes =  new HashSet<>();
-        if (allPermissionInfo != null && allPermissionInfo.getPermissionCode() != null){
-            mergeCodes.addAll(allPermissionInfo.getPermissionCode());
-        }
+    private PermissionInfo removeBanedPermission(List<String> baned,List<PermissionInfoOne> rolePermission){
+        Set<String> banedSet =  new HashSet<>(baned);
 
-        return new PermissionInfo(null, null, new ArrayList<>(mergeCodes));
+        List<String> list = rolePermission.stream()
+                .map(PermissionInfoOne::getPermissionCode)
+                .filter(permissionCode -> !banedSet.contains(permissionCode))
+                .toList();
+
+        return new PermissionInfo(null, null, new ArrayList<>(list));
     }
 
     /**

@@ -34,8 +34,8 @@ public class PermissionCacheRepositoryImpl implements PermissionCacheRepository 
     }
 
     @Override
-    public List<String> getUserPermissionInfo(Long userId) {
-        return mapper.getUserPermissionInfo(userId);
+    public List<String> getBanedPermissionInfo(Long userId) {
+        return mapper.getBanedPermissionInfo(userId);
     }
 
     @Override
