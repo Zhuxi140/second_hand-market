@@ -7,8 +7,8 @@ import com.zhuxi.common.shared.exception.PersistenceException;
 import com.zhuxi.product.module.domain.model.Product;
 import com.zhuxi.product.module.domain.repository.ProductRepository;
 import com.zhuxi.product.module.infrastructure.mapper.ProductMapper;
-import com.zhuxi.product.module.interfaces.vo.CategoryVO;
-import com.zhuxi.product.module.interfaces.vo.ConditionSHVO;
+import com.zhuxi.product.module.interfaces.param.ShProductParam;
+import com.zhuxi.product.module.interfaces.vo.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
@@ -54,6 +54,16 @@ public class ProductRepositoryImpl implements ProductRepository {
             }
     }
 
+    @Override
+    public Long getProductIdBySn(String productSn) {
+        Long productId = productMapper.getProductIdBySn(productSn);
+        if (productId == null){
+            log.error("getProductIdBySn-case:{},productSn:{}", CommonMessage.DATABASE_SELECT_EXCEPTION,productSn);
+            throw new BusinessException(BusinessMessage.GET_SH_CONDITION_ERROR);
+        }
+        return productId;
+    }
+
     // 获取二手商品成色列表
     @Override
     public List<ConditionSHVO> getShConditions() {
@@ -63,5 +73,23 @@ public class ProductRepositoryImpl implements ProductRepository {
             log.error("getShConditions-case:{} message:{}", CommonMessage.DATABASE_SELECT_EXCEPTION,e.getMessage());
             throw new BusinessException(BusinessMessage.GET_SH_CONDITION_ERROR);
         }
+    }
+
+    @Override
+    public List<ShProductVO> getShProductListDesc(ShProductParam param) {
+        return productMapper.getShProductListDesc(param);
+    }
+
+    @Override
+    public List<ShProductVO> getShProductListAsc(ShProductParam shProductParam) {
+        return productMapper.getShProductListAsc(shProductParam);
+    }
+
+    @Override
+    public ProductDetailVO getProductDetail(String productId) {
+        ProductDetailVO productDetail = productMapper.getProductDetail(productId);
+        List<ProductImages> productImages = productMapper.getProductImages(productId);
+        productDetail.setProductImages(productImages);
+        return productDetail;
     }
 }

@@ -144,7 +144,7 @@ public class UserServiceImpl implements UserService {
             repository.deleteToken(id);
         }
 
-        // 将jwt-token写入redis
+        // 将jwt-token写入redis黑名单
         userCacheService.saveBlockList(token, Role.user,expire);
     }
 

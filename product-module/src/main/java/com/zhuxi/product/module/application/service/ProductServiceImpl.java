@@ -8,14 +8,15 @@ import com.zhuxi.product.module.domain.model.Product;
 import com.zhuxi.product.module.domain.repository.ProductRepository;
 import com.zhuxi.product.module.domain.service.ProductService;
 import com.zhuxi.product.module.interfaces.dto.PublishSHDTO;
-import com.zhuxi.product.module.interfaces.vo.CategoryTreeVO;
-import com.zhuxi.product.module.interfaces.vo.CategoryVO;
-import com.zhuxi.product.module.interfaces.vo.ConditionSHVO;
+import com.zhuxi.product.module.interfaces.param.ShProductParam;
+import com.zhuxi.product.module.interfaces.vo.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,12 +30,7 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository repository;
 
-    /**
-     * 获取商品分类列表
-     * @param limit  分页参数
-     * @param offset 分页参数
-     * @return 商品分类树形列表
-     */
+
     @Override
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public List<CategoryTreeVO> getCategoryList(int limit, int offset) {
@@ -48,12 +44,7 @@ public class ProductServiceImpl implements ProductService {
         return buildTree(treeVO);
     }
 
-    /**
-     * 发布二手商品
-     * @param sh 商品发布参数
-     * @param userSn 用户标识
-     * @return 发布结果
-     */
+
     @Override
     @Transactional(rollbackFor = BusinessException.class)
     public String publishSh(PublishSHDTO sh, String userSn) {
@@ -68,14 +59,38 @@ public class ProductServiceImpl implements ProductService {
         return product.getProductSn().getSn();
     }
 
-    /**
-     * 获取二手商品成色列表
-     * @return 二手商品成色列表
-     */
+
     @Override
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public List<ConditionSHVO> getShConditions() {
         return repository.getShConditions();
+    }
+
+
+    @Override
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
+    public List<ShProductVO> getShProductList(ShProductParam shProductParam) {
+
+        boolean isFirst = shProductParam.getLastSn() == null;
+
+        List<ShProductVO> list;
+        if ("DESC".equals(shProductParam.getSortOrder())){
+            setProductIdAndTime(shProductParam,isFirst,true);
+            list = repository.getShProductListDesc(shProductParam);
+        }else if ("ASC".equals(shProductParam.getSortOrder())){
+            setProductIdAndTime(shProductParam,isFirst,false);
+            list = repository.getShProductListAsc(shProductParam);
+        }else {
+            setProductIdAndTime(shProductParam,isFirst,true);
+            list = repository.getShProductListDesc(shProductParam);
+        }
+        return list;
+    }
+
+    @Override
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
+    public ProductDetailVO getProductDetail(String productId) {
+        return repository.getProductDetail(productId);
     }
 
     // 保存草稿
@@ -113,6 +128,21 @@ public class ProductServiceImpl implements ProductService {
                 }
                 parentNode.getChildren().add(node);
                 findChildren(node, allNodes);
+            }
+        }
+    }
+
+    private void setProductIdAndTime(ShProductParam shProductParam,boolean isFirst,boolean isDesc){
+        if (!isFirst){
+            Long productId = repository.getProductIdBySn(shProductParam.getLastSn());
+            shProductParam.setProductId(productId);
+        }else{
+            if (isDesc){
+                shProductParam.setProductId(Long.MAX_VALUE);
+                shProductParam.setLastCreatedAt(LocalDateTime.now());
+            }else{
+                shProductParam.setProductId(Long.MIN_VALUE);
+                shProductParam.setLastCreatedAt(LocalDateTime.MIN);
             }
         }
     }

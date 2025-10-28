@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.zhuxi.productModule.infrastructure.mapper.ProductMapper">
+<mapper namespace="com.zhuxi.product.module.infrastructure.mapper.ProductMapper">
 
     <insert id="insert">
         INSERT INTO
             product( product_sn, seller_id, shop_id, title, description,
-                    category_id, price, condition_id, userStatus, location, view_count, host_score, is_draft)
+                    category_id, price, condition_id, status, location, view_count, host_score, is_draft)
         VALUES
             ( #{productSn}, #{sellerId}, #{shopId}, #{title}, #{description}, #{categoryId},
              #{price}, #{conditionId}, #{userStatus}, #{location}, #{viewCount}, #{hostScore}, #{isDraft})
@@ -39,7 +39,7 @@
                 condition_id = #{conditionId},
             </if>
             <if test="userStatus != null">
-                userStatus = #{userStatus},
+                status = #{userStatus},
             </if>
             <if test="location != null">
                 location = #{location},
@@ -57,4 +57,151 @@
         WHERE
             id = #{id}
     </update>
+    <select id="getShProductListDesc" resultType="com.zhuxi.product.module.interfaces.vo.ShProductVO">
+        SELECT
+            p.product_sn,
+            u.userSn,
+            u.nickname,
+            u.avatar,
+            ps.image_url,
+            p.title,
+            p.price,
+            p.status,
+            p.location,
+            p.created_at
+        FROM product p JOIN product_static ps ON p.id = ps.product_id
+        JOIN user u ON p.seller_id = u.id
+        <where>
+            ps.image_type = 1
+            <if test="location != null and location != ''">
+                AND p.location = #{location}
+            </if>
+            <if test="conditionId != null">
+                AND p.condition_id = #{conditionId}
+            </if>
+            <choose>
+                <when test="sortField == 'price' and productId != null">
+                    <![CDATA[
+                    AND (p.price < #{lastPrice} OR (p.price = #{lastPrice} AND p.id < #{productId}))
+                    ]]>
+                </when>
+                <when test="sortField == 'viewCount' and productId != null">
+                    <![CDATA[
+                    AND (p.view_count < #{lastViewCount} OR (p.view_count = #{lastViewCount} AND p.id < #{productId}))
+                    ]]>
+                </when>
+                <when test="sortField == 'hostScore' and productId != null">
+                    <![CDATA[
+                    AND (p.host_score < #{lastHostScore} OR (p.host_score = #{lastHostScore} AND p.id < #{productId}))
+                    ]]>
+                </when>
+                <when test="(sortField == null or sortField == '') and productId != null">
+                    <![CDATA[
+                    AND (p.created_at < #{lastCreatedAt} OR (p.created_at = #{lastCreatedAt} AND p.id < #{productId}))
+                    ]]>
+                </when>
+            </choose>
+        </where>
+        <if test="sortField != null and sortField != ''">
+            ORDER BY
+            <choose>
+                <when test="sortField == 'price'">
+                    p.price DESC,p.id DESC
+                </when>
+                <when test="sortField == 'viewCount'">
+                    p.view_count DESC,p.id DESC
+                </when>
+                <when test="sortField == 'hostScore'">
+                    p.host_score DESC,p.id DESC
+                </when>
+                <otherwise>
+                        p.created_at DESC,p.id DESC
+                </otherwise>
+            </choose>
+        </if>
+        <if test="sortField == null">
+            ORDER BY
+            p.created_at DESC,p.id DESC
+        </if>
+        LIMIT #{pageSize}
+    </select>
+    <select id="getShProductListAsc" resultType="com.zhuxi.product.module.interfaces.vo.ShProductVO">
+        SELECT
+        p.product_sn,
+        u.userSn,
+        u.nickname,
+        u.avatar,
+        ps.image_url,
+        p.title,
+        p.price,
+        p.status,
+        p.location,
+        p.created_at
+        FROM product p JOIN product_static ps ON p.id = ps.product_id
+        JOIN user u ON p.seller_id = u.id
+        <where>
+            ps.image_type = 1
+            <if test="location != null and location != ''">
+                AND p.location = #{location}
+            </if>
+            <if test="conditionId != null">
+                AND p.condition_id = #{conditionId}
+            </if>
+            <choose>
+                <when test="sortField == 'price' and productId != null">
+                    AND (p.price > #{lastPrice} OR (p.price = #{lastPrice} AND p.id > #{productId}))
+                </when>
+                <when test="sortField == 'viewCount' and productId != null">
+                    AND (p.view_count > #{lastViewCount} OR (p.view_count = #{lastViewCount} AND p.id > #{productId}))
+                </when>
+                <when test="sortField == 'hostScore' and productId != null">
+                    AND (p.host_score > #{lastHostScore} OR (p.host_score = #{lastHostScore} AND p.id > #{productId}))
+                </when>
+                <when test="(sortField == null or sortField == '') and productId != null">
+                    AND (p.created_at > #{lastCreatedAt} OR (p.created_at = #{lastCreatedAt} AND p.id > #{productId}))
+                </when>
+            </choose>
+        </where>
+        <if test="sortField != null and sortField != ''">
+            ORDER BY
+            <choose>
+                <when test="sortField == 'price'">
+                    p.price ASC,p.id ASC
+                </when>
+                <when test="sortField == 'viewCount'">
+                    p.view_count ASC,p.id ASC
+                </when>
+                <when test="sortField == 'hostScore'">
+                    p.host_score ASC,p.id ASC
+                </when>
+                <otherwise>
+                    p.created_at ASC,p.id ASC
+                </otherwise>
+            </choose>
+        </if>
+        <if test="sortField == null">
+            ORDER BY
+            p.created_at ASC,p.id ASC
+        </if>
+        LIMIT #{pageSize}
+    </select>
+    <select id="getProductDetail" resultType="com.zhuxi.product.module.interfaces.vo.ProductDetailVO">
+        SELECT
+            p.product_sn,
+            u.userSn AS seller_sn,
+            u.nickname AS seller_name,
+            u.avatar AS seller_avatar,
+            p.title,
+            p.price,
+            p.category_id,
+            pss.name AS category_name,
+            p.status,
+            p.location,
+            p.description,
+            p.view_count,
+            p.host_score
+        FROM product p JOIN user u ON p.seller_id = u.id
+        JOIN product_sort pss ON p.category_id = pss.id
+        WHERE p.id = #{productId}
+    </select>
 </mapper>
