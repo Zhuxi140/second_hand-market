@@ -8,7 +8,8 @@ import com.zhuxi.common.shared.exception.BusinessException;
 import com.zhuxi.common.shared.exception.TokenException;
 import com.zhuxi.common.shared.utils.BCryptUtils;
 import com.zhuxi.common.shared.utils.JwtUtils;
-import com.zhuxi.user.module.application.command.RegisterCommand;
+import com.zhuxi.user.module.application.service.Process.LoginProcess;
+import com.zhuxi.user.module.application.service.Process.RegisterProcess;
 import com.zhuxi.user.module.domain.user.enums.UserStatus;
 import com.zhuxi.user.module.domain.user.model.User;
 import com.zhuxi.user.module.domain.user.repository.UserRepository;
@@ -18,17 +19,13 @@ import com.zhuxi.user.module.domain.user.valueObject.RefreshToken;
 import com.zhuxi.user.module.infrastructure.config.DefaultProperties;
 import com.zhuxi.user.module.interfaces.dto.user.*;
 import com.zhuxi.user.module.interfaces.vo.user.UserViewVO;
-import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * @author zhuxi
@@ -38,48 +35,31 @@ import java.util.concurrent.ThreadLocalRandom;
 @Slf4j
 // 待完善接口 -- 修改手机号、头像上传处理逻辑等
 public class UserServiceImpl implements UserService {
-    
+
     private final UserRepository repository;
     private final BCryptUtils bCryptUtils;
-    private static final ThreadLocalRandom RANDOM = ThreadLocalRandom.current();
     private final DefaultProperties defaultProperties;
     private final UserCacheService userCacheService;
     private final JwtUtils jwtUtils;
+    private final RegisterProcess registerProcess;
+    private final LoginProcess loginProcess;
 
     /**
      * 注册用户
-     * 待完善: userSn的生成机制
-    */
+     */
     @Override
-    @Transactional(rollbackFor = BusinessException.class)
     public User register(UserRegisterDTO register) {
         //检查用户名是否存在
-        int exist = repository.checkUsernameExist(register.getUsername());
-        if (exist == 1){
-            throw new BusinessException(BusinessMessage.USERNAME_IS_EXIST);
-        }
+        registerProcess.checkNameExist(register);
 
         // 处理默认值
-        String nickName = null;
-        if (register.getNickname() == null || register.getNickname().isBlank()){
-            nickName = "换换" + RANDOM.nextInt(10000);
-        }else{
-            nickName = register.getNickname();
-        }
-        // 加密密码
-        String hashPassword = bCryptUtils.hashCode(register.getPassword());
+        String nickName = registerProcess.setDefaultNickName(register);
 
         //注册
-        User user = new User();
-        RegisterCommand registerCommand = new RegisterCommand(register, defaultProperties, hashPassword, nickName);
-        user.register(registerCommand);
+        User user = registerProcess.buildUser(register, nickName,bCryptUtils,defaultProperties);
 
         //写入
-        repository.save(user);
-        //检测角色是否存在
-        repository.checkRoleExist(user.getRole().getId());
-        //写入角色
-        repository.saveRole(user.getId(),user.getRole().getId());
+        registerProcess.persistUserData(user);
 
         return user;
     }
@@ -87,49 +67,25 @@ public class UserServiceImpl implements UserService {
     /**
      * 登录
      */
-
     @Override
     @Transactional(rollbackFor = BusinessException.class)
     public User login(UserLoginDTO login) {
 
         // 验证用户状态
-        User user = repository.getLoginByUsername(login.getUsername());
-        user.checkUserStatus();
+        var user = loginProcess.checkUserStatus(login);
 
         // 比对用户密码
-        String hashPassword = user.getPassword();
-        boolean outcome = bCryptUtils.checkPw(
-                hashPassword == null ? VIRTUAL_HASH.hash.get(RANDOM.nextInt(VIRTUAL_HASH.hash.size())) : login.getPassword(),
-                hashPassword
-        );
+        boolean outcome = loginProcess.checkPassword(login, user, bCryptUtils);
 
-        if (outcome){
-            RefreshToken freshToken = repository.getFreshToken(user.getId());
-            RefreshToken token;
-            if ( freshToken ==  null) {
-                // 构造长期令牌
-                 token = new RefreshToken(
-                        null,
-                        user.getId(),
-                        UUID.randomUUID().toString(),
-                        LocalDateTime.now().plusDays(defaultProperties.getRefreshExpire()),
-                        null,
-                        null
-                );
-                repository.saveToken(token);
-            }
-            token = freshToken;
-            user.login(token);
+        //登录
+        loginProcess.login(outcome, user, defaultProperties);
 
-            return user;
-        }
-
-        throw new BusinessException(BusinessMessage.USERNAME_OR_PASSWORD_ERROR);
+        return user;
     }
 
     /*
-    * 登出
-    */
+     * 登出
+     */
     @Override
     public void logout(String userSn, String token) {
         token = token.replaceAll("(?i)Bearer\\s*", "");
@@ -140,12 +96,12 @@ public class UserServiceImpl implements UserService {
         // 验证长时token存在  若存在将其逻辑删除
         Long userId = repository.getUserId(userSn);
         Long id = repository.checkFreshTokenExist(userId);
-        if (id != null){
+        if (id != null) {
             repository.deleteToken(id);
         }
 
         // 将jwt-token写入redis黑名单
-        userCacheService.saveBlockList(token, Role.user,expire);
+        userCacheService.saveBlockList(token, Role.user, expire);
     }
 
     /**
@@ -156,7 +112,7 @@ public class UserServiceImpl implements UserService {
     public void updateInfo(UserUpdateInfoDTO update, String userSn) {
 
         User user = repository.getUserIdRoleStatusBySn(userSn);
-        if (user.getUserStatus() == UserStatus.LOCKED){
+        if (user.getUserStatus() == UserStatus.LOCKED) {
             throw new BusinessException(BusinessMessage.USER_IS_LOCK);
         }
 
@@ -169,7 +125,7 @@ public class UserServiceImpl implements UserService {
      * 获取用户信息
      */
     @Override
-    @Transactional(readOnly = true,propagation=Propagation.SUPPORTS)
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public UserViewVO getUserInfo(String userSn) {
         return repository.getUserInfo(userSn);
     }
@@ -177,10 +133,10 @@ public class UserServiceImpl implements UserService {
 
     /*
      * 修改密码
-    */
+     */
     @Override
     @Transactional(rollbackFor = BusinessException.class)
-    public void updatePassword(UserUpdatePwDTO updatePw, String userSn,String token) {
+    public void updatePassword(UserUpdatePwDTO updatePw, String userSn, String token) {
 
         // 检查用户状态
         User user = repository.getUserIdRoleStatusBySn(userSn);
@@ -188,33 +144,33 @@ public class UserServiceImpl implements UserService {
 
         // 比对用户密码
         boolean result = bCryptUtils.checkPw(updatePw.getOldPassword(), user.getPassword());
-        if (!result){
+        if (!result) {
             throw new BusinessException(BusinessMessage.USER_OLD_PASSWORD_ERROR);
         }
 
         // 异步清除用户登录状态
-        CompletableFuture.runAsync(() -> logout(userSn,token));
+        CompletableFuture.runAsync(() -> logout(userSn, token));
 
         String hashPassword = bCryptUtils.hashCode(updatePw.getNewPassword());
         //写入新密码
-        repository.updatePw(user.getId(),hashPassword);
+        repository.updatePw(user.getId(), hashPassword);
     }
 
     /**
      * 刷新令牌
      */
     @Override
-    @Transactional(readOnly = true,propagation=Propagation.SUPPORTS)
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public RefreshToken renewJwt(RefreshDTO refresh) {
 
         Long userId = repository.getUserId(refresh.getUserSn());
         RefreshToken token = repository.getTokenByUserId(userId);
-        if (!token.getTokenHash().equals(refresh.getRefreshToken())){
+        if (!token.getTokenHash().equals(refresh.getRefreshToken())) {
             log.warn("刷新令牌不一致");
             throw new TokenException(AuthMessage.LOGIN_INVALID);
         }
 
-        if (token.getExpiresAt().isBefore(LocalDateTime.now())){
+        if (token.getExpiresAt().isBefore(LocalDateTime.now())) {
             log.warn("刷新令牌已过期");
             throw new TokenException(AuthMessage.LOGIN_EXPIRED);
         }
@@ -227,16 +183,6 @@ public class UserServiceImpl implements UserService {
     }
 
 
-    private static class VIRTUAL_HASH{
-        public static List<String> hash = List.of(
-                "$2a$10$o0d2OaDqaXmnhJDw4934Guo17bVhKafy5PnwwkySttZJd1JiEBJbC",
-                "$2a$10$zQSBxnXcy.Xh1kG1YFWwSO.VLm1DBeX1VB8yxjmHOKz5KUASWPWx.",
-                "$2a$10$Yj9Jfl.sJXZiUjuWu94etePa9u.ZPYJBLEDPP8yNt4YHO/CIkyIxq",
-                "$2a$10$jzjviFMYJA8COLaCg6Boieh0e1.Q.Y1AhPlomT8RC25sc1IuB6qQ.",
-                "$2a$10$GG6r.eAdUNqxslQSAOHyTOZDk/qUCB3RLCUAzSriYfZkNOIqrASeC",
-                "$2a$10$C8PO6p4iq8rnJhV0sYpNNO9WLj96hSp5tmTEPQfLtyf9hS4e/or3W"
-        );
-    }
 
 
 }

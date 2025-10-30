@@ -77,7 +77,7 @@ public class Product {
      */
     public void modify(UpdateProductDTO update,Long productId){
         this.id = productId;
-        this.sellerId = update.getShopId();
+        this.sellerId = update.getSellerId();
         this.title = new Title(update.getTitle());
         this.description = update.getDescription();
         this.categoryId = update.getCategoryId();

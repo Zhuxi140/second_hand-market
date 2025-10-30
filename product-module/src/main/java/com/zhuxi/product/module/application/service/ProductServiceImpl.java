@@ -101,8 +101,8 @@ public class ProductServiceImpl implements ProductService {
         // 获取商品id
         Long productId = repository.getProductIdBySn(update.getProductSn());
         // 获取用户id
-        Long shopId = repository.getUserIdBySn(userSn);
-        update.setShopId(shopId);
+        Long sellerId = repository.getUserIdBySn(userSn);
+        update.setSellerId(sellerId);
 
         Product product = new Product();
         // 修改商品

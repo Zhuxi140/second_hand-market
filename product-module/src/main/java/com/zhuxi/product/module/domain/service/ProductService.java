@@ -57,9 +57,16 @@ public interface ProductService {
 
     /**
      * 删除商品
+     * 待完善: 分布式 异步问题  数据一致性问题   
      * @param productSn 商品编号
      */
     void delProduct(String productSn);
 
+    /**
+     *  获取个人的商品列表
+     * @param userSn 用户编号
+     * @return 个人的商品列表
+     */
     List<MeShProductVO> getMeShProductList(String userSn);
+
 }

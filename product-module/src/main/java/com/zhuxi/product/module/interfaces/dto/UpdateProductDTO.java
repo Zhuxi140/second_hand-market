@@ -28,7 +28,7 @@ public class UpdateProductDTO {
     @NotBlank(message = ValidationMessage.NOT_NULL_NOT_EMPTY)
     private String productSn;
     @JsonIgnore
-    private Long shopId;
+    private Long sellerId;
     @Schema(description = "商品名称",requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String title;
     @Schema(description = "商品描述",requiredMode = Schema.RequiredMode.NOT_REQUIRED)

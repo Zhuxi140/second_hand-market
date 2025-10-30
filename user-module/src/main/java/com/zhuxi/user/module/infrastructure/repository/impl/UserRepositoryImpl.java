@@ -146,11 +146,6 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public RefreshToken getFreshToken(Long userId) {
-        return userMapper.getFreshToken(userId);
-    }
-
-    @Override
     public Long checkFreshTokenExist(Long userId) {
         return userMapper.checkFreshTokenExist(userId);
     }

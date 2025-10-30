@@ -55,7 +55,8 @@ public class User {
     // 注册
     public void register(RegisterCommand command){
         UserRegisterDTO register = command.getRegister();
-        this.userSn = UUID.randomUUID().toString();
+        String uu = UUID.randomUUID().toString();
+        this.userSn = uu.replace("-", "");
         this.username = new Username(register.getUsername());
         this.password = command.getHashPassword();
         this.nickname = command.getNickName();
