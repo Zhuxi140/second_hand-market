@@ -59,9 +59,19 @@ public class ProductRepositoryImpl implements ProductRepository {
         Long productId = productMapper.getProductIdBySn(productSn);
         if (productId == null){
             log.error("getProductIdBySn-case:{},productSn:{}", CommonMessage.DATABASE_SELECT_EXCEPTION,productSn);
-            throw new BusinessException(BusinessMessage.GET_SH_CONDITION_ERROR);
+            throw new BusinessException(BusinessMessage.PRODUCT_ID_IS_NULL);
         }
         return productId;
+    }
+
+    @Override
+    public Long getUserIdBySn(String userSn) {
+        Long userId = productMapper.getUserIdBySn(userSn);
+        if (userId == null){
+            log.error("getUserIdBySn-case:{},userSn:{}", CommonMessage.DATABASE_SELECT_EXCEPTION,userSn);
+            throw new BusinessException(BusinessMessage.USER_ID_IS_NULL);
+        }
+        return userId;
     }
 
     // 获取二手商品成色列表
@@ -86,10 +96,34 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     @Override
-    public ProductDetailVO getProductDetail(String productId) {
-        ProductDetailVO productDetail = productMapper.getProductDetail(productId);
-        List<ProductImages> productImages = productMapper.getProductImages(productId);
+    public ProductDetailVO getShProductDetail(String productSn) {
+        Long productId = productMapper.getProductIdBySn(productSn);
+        if (productId == null){
+            log.error("getShProductDetail:getShProductDetail-case:{},productSn:{}", CommonMessage.DATABASE_SELECT_EXCEPTION,productSn);
+            throw new BusinessException(BusinessMessage.GET_SH_PRODUCT_LIST_ERROR);
+        }
+        ProductDetailVO productDetail = productMapper.getShProductDetail(productId);
+        List<ProductImage> productImages = productMapper.getProductImages(productId);
         productDetail.setProductImages(productImages);
         return productDetail;
+    }
+
+    @Override
+    public void delProduct(Long productId) {
+        Integer result = productMapper.delProduct(productId);
+        if (result != 1){
+            log.error("delProduct-case:{},productId:{}", CommonMessage.DATABASE_DELETE_EXCEPTION,productId);
+            throw new BusinessException(BusinessMessage.DEL_PRODUCT_ERROR);
+        }
+    }
+
+    @Override
+    public List<MeShProductVO> getMeShProductList(Long userId) {
+        try {
+            return productMapper.getMeShProductList(userId);
+        }catch (Exception e){
+            log.error("getMeShProductList-error:case:{} ",e.getMessage());
+            throw new BusinessException(BusinessMessage.GET_SH_PRODUCT_LIST_ERROR);
+        }
     }
 }

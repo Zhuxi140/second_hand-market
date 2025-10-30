@@ -2,11 +2,9 @@ package com.zhuxi.product.module.domain.service;
 
 import com.zhuxi.product.module.domain.model.Product;
 import com.zhuxi.product.module.interfaces.dto.PublishSHDTO;
+import com.zhuxi.product.module.interfaces.dto.UpdateProductDTO;
 import com.zhuxi.product.module.interfaces.param.ShProductParam;
-import com.zhuxi.product.module.interfaces.vo.CategoryTreeVO;
-import com.zhuxi.product.module.interfaces.vo.ConditionSHVO;
-import com.zhuxi.product.module.interfaces.vo.ProductDetailVO;
-import com.zhuxi.product.module.interfaces.vo.ShProductVO;
+import com.zhuxi.product.module.interfaces.vo.*;
 
 import java.util.List;
 
@@ -44,5 +42,24 @@ public interface ProductService {
      */
     List<ShProductVO> getShProductList(ShProductParam shProductParam);
 
-    ProductDetailVO getProductDetail(String productId);
+    /**
+     * 获取商品详细信息
+     * @param productSn 商品编号
+     */
+    ProductDetailVO getShProductDetail(String productSn);
+
+    /**
+     * 修改商品信息
+     * @param update 修改商品信息DTO
+     * @param userSn 用户编号
+     */
+    void updateProduct(UpdateProductDTO update, String userSn);
+
+    /**
+     * 删除商品
+     * @param productSn 商品编号
+     */
+    void delProduct(String productSn);
+
+    List<MeShProductVO> getMeShProductList(String userSn);
 }

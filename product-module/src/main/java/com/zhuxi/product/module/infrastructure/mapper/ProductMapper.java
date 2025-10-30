@@ -3,6 +3,7 @@ package com.zhuxi.product.module.infrastructure.mapper;
 import com.zhuxi.product.module.domain.model.Product;
 import com.zhuxi.product.module.interfaces.param.ShProductParam;
 import com.zhuxi.product.module.interfaces.vo.*;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
@@ -16,6 +17,9 @@ public interface ProductMapper {
 
     @Select("SELECT id FROM product WHERE product_sn = #{productSn}")
     Long getProductIdBySn(String productSn);
+
+    @Select("SELECT id FROM user WHERE userSn = #{userSn} ")
+    Long getUserIdBySn(String userSn);
 
     @Select("SELECT id,name,parent_id,icon_url FROM product_sort LIMIT #{limit} OFFSET #{offset}")
     List<CategoryVO> getCategoryList(int limit,int offset);
@@ -31,7 +35,7 @@ public interface ProductMapper {
 
     List<ShProductVO> getShProductListAsc(ShProductParam param);
 
-    ProductDetailVO getProductDetail(String productId);
+    ProductDetailVO getShProductDetail(Long productId);
 
     @Select("""
     SELECT
@@ -41,6 +45,17 @@ public interface ProductMapper {
     FROM product_static ps JOIN product p ON ps.product_id = p.id
     WHERE p.id = #{productId}
     """)
-    List<ProductImages> getProductImages(String productId);
+    List<ProductImage> getProductImages(Long productId);
+
+    @Delete("DELETE FROM product WHERE id = #{productId}")
+    Integer delProduct(Long productId);
+
+    @Select("""
+    SELECT
+    p.product_sn,p.title,p.price,ps.image_url,p.view_count,p.is_draft,p.created_at
+    FROM product p JOIN product_static ps ON p.id = ps.product_id
+     WHERE p.seller_id = #{userId} AND ps.image_type = 1
+    """)
+    List<MeShProductVO> getMeShProductList(Long userId);
 
 }

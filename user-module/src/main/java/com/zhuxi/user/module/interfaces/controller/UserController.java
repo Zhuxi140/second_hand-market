@@ -146,6 +146,7 @@ public class UserController {
         return Result.success();
     }
 
+
     @Operation(summary = "刷新令牌", description = "刷新令牌接口，用于刷新访问令牌")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "刷新成功",

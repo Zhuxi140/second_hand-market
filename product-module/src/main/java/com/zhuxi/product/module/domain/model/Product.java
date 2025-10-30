@@ -4,6 +4,7 @@ import com.zhuxi.product.module.domain.enums.IsDraft;
 import com.zhuxi.product.module.domain.enums.ProductStatus;
 import com.zhuxi.product.module.domain.objectValue.*;
 import com.zhuxi.product.module.interfaces.dto.PublishSHDTO;
+import com.zhuxi.product.module.interfaces.dto.UpdateProductDTO;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -53,7 +54,11 @@ public class Product {
         this.updateTime = updateTime;
     }
 
-    // 发布二手商品
+    /**
+     * 发布商品
+     * @param sh 发布二手商品信息
+     * @param sellerId 卖家id
+     */
     public void publish(PublishSHDTO  sh,Long sellerId){
         this.title = new Title(sh.getTitle());
         this.description = sh.getDescription();
@@ -66,7 +71,27 @@ public class Product {
         this.sellerId = sellerId;
     }
 
-    // 更新草稿状态
+    /**
+     * 修改商品信息
+     * @param update 修改商品信息DTO
+     */
+    public void modify(UpdateProductDTO update,Long productId){
+        this.id = productId;
+        this.sellerId = update.getShopId();
+        this.title = new Title(update.getTitle());
+        this.description = update.getDescription();
+        this.categoryId = update.getCategoryId();
+        this.price = new Price(update.getPrice());
+        this.conditionId = update.getConditionId();
+        this.status = ProductStatus.getByCode(update.getStatus());
+        this.location = new Location(update.getLocation());
+        this.modifyToDraft(update.getIsDraft());
+    }
+
+    /**
+     * 修改为商品为草稿状态
+     * @param draft 草稿状态
+     */
     public void modifyToDraft(IsDraft draft){
         if (draft == IsDraft.ENABLE){
             this.isDraft = IsDraft.ENABLE;

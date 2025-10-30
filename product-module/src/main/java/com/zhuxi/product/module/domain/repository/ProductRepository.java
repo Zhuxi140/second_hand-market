@@ -2,10 +2,7 @@ package com.zhuxi.product.module.domain.repository;
 
 import com.zhuxi.product.module.domain.model.Product;
 import com.zhuxi.product.module.interfaces.param.ShProductParam;
-import com.zhuxi.product.module.interfaces.vo.CategoryVO;
-import com.zhuxi.product.module.interfaces.vo.ConditionSHVO;
-import com.zhuxi.product.module.interfaces.vo.ProductDetailVO;
-import com.zhuxi.product.module.interfaces.vo.ShProductVO;
+import com.zhuxi.product.module.interfaces.vo.*;
 
 import java.util.List;
 
@@ -36,6 +33,13 @@ public interface ProductRepository {
     Long getProductIdBySn(String productSn);
 
     /**
+     * 根据用户编号获取用户id
+     * @param userSn 用户编号
+     * @return 用户id
+     */
+    Long getUserIdBySn(String userSn);
+
+    /**
      * 获取二手商品成色列表
      * @return 二手商品成色列表
      */
@@ -61,6 +65,15 @@ public interface ProductRepository {
      * @param productId 商品id
      * @return 商品详情
      */
-    ProductDetailVO getProductDetail(String productId);
+    ProductDetailVO getShProductDetail(String productId);
+
+    /**
+     * 删除商品
+     * @param productId 商品id
+     */
+    void delProduct(Long productId);
+
+
+    List<MeShProductVO> getMeShProductList(Long userId);
 
 }

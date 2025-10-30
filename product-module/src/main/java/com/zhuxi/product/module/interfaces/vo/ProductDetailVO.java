@@ -48,5 +48,5 @@ public class ProductDetailVO {
     @Schema(description = "商品热度指数")
     private Long hostScore;
     @Schema(description = "商品图片列表")
-    private List<ProductImages> productImages;
+    private List<ProductImage> productImages;
 }

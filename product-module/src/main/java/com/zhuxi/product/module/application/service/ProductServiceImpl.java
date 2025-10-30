@@ -8,6 +8,7 @@ import com.zhuxi.product.module.domain.model.Product;
 import com.zhuxi.product.module.domain.repository.ProductRepository;
 import com.zhuxi.product.module.domain.service.ProductService;
 import com.zhuxi.product.module.interfaces.dto.PublishSHDTO;
+import com.zhuxi.product.module.interfaces.dto.UpdateProductDTO;
 import com.zhuxi.product.module.interfaces.param.ShProductParam;
 import com.zhuxi.product.module.interfaces.vo.*;
 import lombok.RequiredArgsConstructor;
@@ -89,8 +90,40 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-    public ProductDetailVO getProductDetail(String productId) {
-        return repository.getProductDetail(productId);
+    public ProductDetailVO getShProductDetail(String productSn) {
+        return repository.getShProductDetail(productSn);
+    }
+
+    @Override
+    @Transactional(rollbackFor = BusinessException.class)
+    public void updateProduct(UpdateProductDTO update, String userSn) {
+
+        // 获取商品id
+        Long productId = repository.getProductIdBySn(update.getProductSn());
+        // 获取用户id
+        Long shopId = repository.getUserIdBySn(userSn);
+        update.setShopId(shopId);
+
+        Product product = new Product();
+        // 修改商品
+        product.modify(update,productId);
+
+        //写入
+        repository.save(product);
+    }
+
+    @Override
+    @Transactional(rollbackFor = BusinessException.class)
+    public void delProduct(String productSn) {
+
+        Long productId = repository.getProductIdBySn(productSn);
+        repository.delProduct(productId);
+    }
+
+    @Override
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
+    public List<MeShProductVO> getMeShProductList(String userSn) {
+        return repository.getMeShProductList(repository.getUserIdBySn(userSn));
     }
 
     // 保存草稿

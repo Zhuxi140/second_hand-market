@@ -27,7 +27,7 @@ public @interface PermissionCheck {
      * 权限逻辑关系
      * AND: role和permission都需满足
      * OR: 满足role和permission中的任意一个
-     * 默认： AND
+     * 默认： OR
      */
     Logic logic() default Logic.OR;
 

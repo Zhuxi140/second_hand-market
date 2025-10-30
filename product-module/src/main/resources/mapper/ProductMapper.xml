@@ -185,7 +185,7 @@
         </if>
         LIMIT #{pageSize}
     </select>
-    <select id="getProductDetail" resultType="com.zhuxi.product.module.interfaces.vo.ProductDetailVO">
+    <select id="getShProductDetail" resultType="com.zhuxi.product.module.interfaces.vo.ProductDetailVO">
         SELECT
             p.product_sn,
             u.userSn AS seller_sn,

@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Schema(description = "商品图片列表")
-public class ProductImages {
+public class ProductImage {
     @Schema(description = "规格id")
     private Long skuId;
     @Schema(description = "图片地址")

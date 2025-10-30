@@ -1,13 +1,12 @@
 package com.zhuxi.product.module.interfaces.controller;
 
+import com.zhuxi.common.interfaces.result.Result;
 import com.zhuxi.common.shared.annotation.PermissionCheck;
 import com.zhuxi.common.shared.enums.Role;
 import com.zhuxi.product.module.domain.service.ProductService;
+import com.zhuxi.product.module.interfaces.dto.UpdateProductDTO;
 import com.zhuxi.product.module.interfaces.param.ShProductParam;
-import com.zhuxi.product.module.interfaces.vo.CategoryTreeVO;
-import com.zhuxi.product.module.interfaces.vo.ConditionSHVO;
-import com.zhuxi.product.module.interfaces.vo.ProductDetailVO;
-import com.zhuxi.product.module.interfaces.vo.ShProductVO;
+import com.zhuxi.product.module.interfaces.vo.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -71,9 +70,47 @@ public class ProductController {
             @ApiResponse(responseCode = "200", description = "获取成功", content = @Content(schema = @Schema(implementation = ProductDetailVO.class))),
             @ApiResponse(responseCode = "500", description = "获取失败")
     })
-    public ProductDetailVO getShProductDetail(@RequestParam String productId)
+    public ProductDetailVO getShProductDetail(@RequestParam String productSn)
     {
-        return productService.getProductDetail(productId);
+        return productService.getShProductDetail(productSn);
+    }
+
+    @PostMapping("/updateProduct")
+    @Operation(summary = "修改商品", description = "修改商品")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "修改成功"),
+            @ApiResponse(responseCode = "500", description = "修改失败")
+    })
+    @PermissionCheck(Role = Role.user,permission = "user:updateProductInfo", enableDataOwnership = true)
+    public Result<String> updateProduct(@Valid @RequestBody UpdateProductDTO update, @RequestParam String userSn)
+    {
+        productService.updateProduct(update, userSn);
+        return  Result.success();
+    }
+
+    @PostMapping("/delProduct")
+    @Operation(summary = "删除商品", description = "删除商品")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "删除成功"),
+            @ApiResponse(responseCode = "500", description = "删除失败")
+    })
+    @PermissionCheck(Role = Role.user,permission = "user:delProduct", enableDataOwnership = true)
+    public Result<String> delProduct(@RequestParam String productSn,@RequestParam String userSn)
+    {
+        productService.delProduct(productSn);
+        return  Result.success();
+    }
+
+    @GetMapping("/meShProductList")
+    @Operation(summary = "获取个人发布商品列表", description = "获取个人发布商品列表")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "获取成功", content = @Content(schema = @Schema(implementation = MeShProductVO.class))),
+            @ApiResponse(responseCode = "500", description = "获取失败")
+    })
+    @PermissionCheck(Role = Role.user,permission = "user:getMeShProductList", enableDataOwnership = true)
+    public List<MeShProductVO> getMeShProductList(@RequestParam String userSn)
+    {
+        return productService.getMeShProductList(userSn);
     }
 
 
