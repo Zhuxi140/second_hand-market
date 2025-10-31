@@ -39,7 +39,7 @@ public class Result<T> {
     }
 
     public static <T> Result<T> success() {
-        return new Result<>(200, "message",null, System.currentTimeMillis());
+        return new Result<>(200, "success",null, System.currentTimeMillis());
     }
 
     public static <T> Result<T> success(T data) {

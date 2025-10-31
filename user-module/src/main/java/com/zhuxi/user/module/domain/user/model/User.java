@@ -7,7 +7,6 @@ import com.zhuxi.user.module.application.command.RegisterCommand;
 import com.zhuxi.user.module.domain.user.enums.UserStatus;
 import com.zhuxi.user.module.domain.user.valueObject.Email;
 import com.zhuxi.user.module.domain.user.valueObject.Phone;
-import com.zhuxi.user.module.domain.user.valueObject.RefreshToken;
 import com.zhuxi.user.module.domain.user.valueObject.Username;
 import com.zhuxi.user.module.interfaces.dto.user.UserRegisterDTO;
 import com.zhuxi.user.module.interfaces.dto.user.UserUpdateInfoDTO;
@@ -35,7 +34,7 @@ public class User {
     private String gender = null;
     private RefreshToken refreshToken;
 
-    private User(Long id, String userSn, Username username, String password, String nickname,
+    public User(Long id, String userSn, Username username, String password, String nickname,
                 Email email, Phone phone, String gender, String avatar, Integer status, Role role) {
         this.id = id;
         this.userSn = userSn;

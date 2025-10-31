@@ -11,7 +11,7 @@ import com.zhuxi.common.shared.utils.JwtUtils;
 import com.zhuxi.user.module.application.assembler.UserConvert;
 import com.zhuxi.user.module.domain.user.model.User;
 import com.zhuxi.user.module.domain.user.service.UserService;
-import com.zhuxi.user.module.domain.user.valueObject.RefreshToken;
+import com.zhuxi.user.module.domain.user.model.RefreshToken;
 import com.zhuxi.user.module.interfaces.dto.user.*;
 import com.zhuxi.user.module.interfaces.vo.user.UserLoginVO;
 import com.zhuxi.user.module.interfaces.vo.user.UserRegisterVO;

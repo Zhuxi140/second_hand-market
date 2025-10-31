@@ -5,7 +5,7 @@ import com.zhuxi.common.shared.exception.BusinessException;
 import com.zhuxi.common.shared.utils.BCryptUtils;
 import com.zhuxi.user.module.domain.user.model.User;
 import com.zhuxi.user.module.domain.user.repository.UserRepository;
-import com.zhuxi.user.module.domain.user.valueObject.RefreshToken;
+import com.zhuxi.user.module.domain.user.model.RefreshToken;
 import com.zhuxi.user.module.infrastructure.config.DefaultProperties;
 import com.zhuxi.user.module.interfaces.dto.user.UserLoginDTO;
 import lombok.RequiredArgsConstructor;
@@ -48,8 +48,9 @@ public class LoginProcess {
     public boolean checkPassword(UserLoginDTO login, User user, BCryptUtils bCryptUtils){
         String hashPassword = user.getPassword();
         return  bCryptUtils.checkPw(
-                hashPassword == null ? LoginProcess.VIRTUAL_HASH.hash.get(RANDOM.nextInt(LoginProcess.VIRTUAL_HASH.hash.size())) : hashPassword ,
-                login.getPassword()
+                login.getPassword(),
+                hashPassword == null ? LoginProcess.VIRTUAL_HASH.hash.get(RANDOM.nextInt(LoginProcess.VIRTUAL_HASH.hash.size())) : hashPassword
+
         );
     }
 
@@ -66,17 +67,18 @@ public class LoginProcess {
             RefreshToken token;
             if (freshToken == null) {
                 // 构造长期令牌
-                token = new RefreshToken(
-                        null,
+                RefreshToken token1 = new RefreshToken();
+                token1.buildToken(
                         user.getId(),
                         UUID.randomUUID().toString(),
-                        LocalDateTime.now().plusDays(defaultProperties.getRefreshExpire()),
-                        null,
-                        null
-                );
+                        LocalDateTime.now().plusDays(defaultProperties.getRefreshExpire())
+                        );
+                token = token1;
+                // 保存令牌
                 userRepository.saveToken(token);
+            }else{
+                token = freshToken;
             }
-            token = freshToken;
             user.login(token);
             return;
         }

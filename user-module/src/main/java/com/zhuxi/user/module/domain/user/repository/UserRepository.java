@@ -2,7 +2,7 @@ package com.zhuxi.user.module.domain.user.repository;
 
 import com.zhuxi.common.shared.enums.Role;
 import com.zhuxi.user.module.domain.user.model.User;
-import com.zhuxi.user.module.domain.user.valueObject.RefreshToken;
+import com.zhuxi.user.module.domain.user.model.RefreshToken;
 import com.zhuxi.user.module.interfaces.vo.user.UserViewVO;
 
 /**
@@ -69,7 +69,14 @@ public interface UserRepository {
      * @param userSn 用户sn
      * @return 用户领域对象
      */
-    User getUserIdRoleStatusBySn(String userSn);
+    User getUserIdStatusBySn(String userSn);
+
+    /**
+     * 获取用户id、状态、密码
+     * @param userSn 用户sn
+     * @return 用户领域对象
+     */
+    User getUserIdStatusPasswordBySn(String userSn);
 
     /**
      * 获取用户id

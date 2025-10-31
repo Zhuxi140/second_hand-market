@@ -7,7 +7,7 @@ import com.zhuxi.common.shared.enums.Role;
 import com.zhuxi.common.shared.exception.BusinessException;
 import com.zhuxi.user.module.domain.user.model.User;
 import com.zhuxi.user.module.domain.user.repository.UserRepository;
-import com.zhuxi.user.module.domain.user.valueObject.RefreshToken;
+import com.zhuxi.user.module.domain.user.model.RefreshToken;
 import com.zhuxi.user.module.infrastructure.mapper.UserMapper;
 import com.zhuxi.user.module.interfaces.vo.user.UserViewVO;
 import lombok.RequiredArgsConstructor;
@@ -106,8 +106,17 @@ public class UserRepositoryImpl implements UserRepository {
 
 
     @Override
-    public User getUserIdRoleStatusBySn(String userSn) {
-        User user = userMapper.getISBySn(userSn);
+    public User getUserIdStatusBySn(String userSn) {
+        User user = userMapper.getUserIdStatusBySn(userSn);
+        if (user == null){
+            throw new BusinessException(BusinessMessage.USER_DATA_ERROR);
+        }
+        return user;
+    }
+
+    @Override
+    public User getUserIdStatusPasswordBySn(String userSn) {
+        User user = userMapper.getUserIdStatusPasswordBySn(userSn);
         if (user == null){
             throw new BusinessException(BusinessMessage.USER_DATA_ERROR);
         }
@@ -136,13 +145,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public RefreshToken getTokenByUserId(Long userId) {
-
-        RefreshToken token = userMapper.getTokenByUserId(userId);
-        if (token == null){
-            log.error("getTokenByUserId-error: userId:{}\n cases: {}", userId,CommonMessage.DATABASE_SELECT_EXCEPTION);
-            throw new BusinessException(AuthMessage.LOGIN_INVALID);
-        }
-        return token;
+        return userMapper.getTokenByUserId(userId);
     }
 
     @Override

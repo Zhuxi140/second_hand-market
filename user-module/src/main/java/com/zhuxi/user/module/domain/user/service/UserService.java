@@ -2,7 +2,7 @@ package com.zhuxi.user.module.domain.user.service;
 
 
 import com.zhuxi.user.module.domain.user.model.User;
-import com.zhuxi.user.module.domain.user.valueObject.RefreshToken;
+import com.zhuxi.user.module.domain.user.model.RefreshToken;
 import com.zhuxi.user.module.interfaces.dto.user.*;
 import com.zhuxi.user.module.interfaces.vo.user.UserViewVO;
 

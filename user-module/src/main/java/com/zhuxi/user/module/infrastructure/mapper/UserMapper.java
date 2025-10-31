@@ -2,7 +2,7 @@ package com.zhuxi.user.module.infrastructure.mapper;
 
 import com.zhuxi.common.shared.enums.Role;
 import com.zhuxi.user.module.domain.user.model.User;
-import com.zhuxi.user.module.domain.user.valueObject.RefreshToken;
+import com.zhuxi.user.module.domain.user.model.RefreshToken;
 import com.zhuxi.user.module.interfaces.vo.user.UserViewVO;
 import org.apache.ibatis.annotations.*;
 
@@ -79,7 +79,17 @@ public interface UserMapper {
     FROM user u JOIN user_role ur ON u.id = ur.user_id
     WHERE userSn = #{userSn}
     """)
-    User getISBySn(String userSn);
+    User getUserIdStatusBySn(String userSn);
+
+    @Select("""
+    SELECT
+        id,
+        password,
+        userStatus
+    FROM user
+    WHERE userSn = #{userSn}
+    """)
+    User getUserIdStatusPasswordBySn(String userSn);
 
     @Select("SELECT id FROM user WHERE userSn = #{userSn}")
     Long getUserId(String userSn);

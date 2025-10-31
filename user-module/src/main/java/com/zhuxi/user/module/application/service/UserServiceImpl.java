@@ -8,6 +8,7 @@ import com.zhuxi.common.shared.exception.BusinessException;
 import com.zhuxi.common.shared.exception.TokenException;
 import com.zhuxi.common.shared.utils.BCryptUtils;
 import com.zhuxi.common.shared.utils.JwtUtils;
+import com.zhuxi.user.module.application.service.Process.ChangePasswordProcess;
 import com.zhuxi.user.module.application.service.Process.LoginProcess;
 import com.zhuxi.user.module.application.service.Process.RegisterProcess;
 import com.zhuxi.user.module.domain.user.enums.UserStatus;
@@ -15,7 +16,7 @@ import com.zhuxi.user.module.domain.user.model.User;
 import com.zhuxi.user.module.domain.user.repository.UserRepository;
 import com.zhuxi.user.module.domain.user.service.UserCacheService;
 import com.zhuxi.user.module.domain.user.service.UserService;
-import com.zhuxi.user.module.domain.user.valueObject.RefreshToken;
+import com.zhuxi.user.module.domain.user.model.RefreshToken;
 import com.zhuxi.user.module.infrastructure.config.DefaultProperties;
 import com.zhuxi.user.module.interfaces.dto.user.*;
 import com.zhuxi.user.module.interfaces.vo.user.UserViewVO;
@@ -43,6 +44,7 @@ public class UserServiceImpl implements UserService {
     private final JwtUtils jwtUtils;
     private final RegisterProcess registerProcess;
     private final LoginProcess loginProcess;
+    private final ChangePasswordProcess changePasswordProcess;
 
     /**
      * 注册用户
@@ -68,7 +70,6 @@ public class UserServiceImpl implements UserService {
      * 登录
      */
     @Override
-    @Transactional(rollbackFor = BusinessException.class)
     public User login(UserLoginDTO login) {
 
         // 验证用户状态
@@ -111,13 +112,16 @@ public class UserServiceImpl implements UserService {
     @Transactional(rollbackFor = BusinessException.class)
     public void updateInfo(UserUpdateInfoDTO update, String userSn) {
 
-        User user = repository.getUserIdRoleStatusBySn(userSn);
+        // 验证用户状态
+        User user = repository.getUserIdStatusBySn(userSn);
         if (user.getUserStatus() == UserStatus.LOCKED) {
             throw new BusinessException(BusinessMessage.USER_IS_LOCK);
         }
 
+        // 更新用户信息
         user.updateInfo(update);
 
+        // 写入数据库
         repository.save(user);
     }
 
@@ -135,25 +139,19 @@ public class UserServiceImpl implements UserService {
      * 修改密码
      */
     @Override
-    @Transactional(rollbackFor = BusinessException.class)
     public void updatePassword(UserUpdatePwDTO updatePw, String userSn, String token) {
 
-        // 检查用户状态
-        User user = repository.getUserIdRoleStatusBySn(userSn);
-        user.checkUserStatus();
+        // 验证用户状态
+        User user = changePasswordProcess.checkUserStatus(userSn);
 
         // 比对用户密码
-        boolean result = bCryptUtils.checkPw(updatePw.getOldPassword(), user.getPassword());
-        if (!result) {
-            throw new BusinessException(BusinessMessage.USER_OLD_PASSWORD_ERROR);
-        }
+        changePasswordProcess.validatePassword(bCryptUtils, updatePw, user);
 
-        // 异步清除用户登录状态
+        //异步清楚登录状态
         CompletableFuture.runAsync(() -> logout(userSn, token));
 
-        String hashPassword = bCryptUtils.hashCode(updatePw.getNewPassword());
-        //写入新密码
-        repository.updatePw(user.getId(), hashPassword);
+        //修改密码
+        changePasswordProcess.updatePassword(updatePw, user, bCryptUtils);
     }
 
     /**
@@ -165,6 +163,11 @@ public class UserServiceImpl implements UserService {
 
         Long userId = repository.getUserId(refresh.getUserSn());
         RefreshToken token = repository.getTokenByUserId(userId);
+
+        if (token == null){
+            throw new TokenException(AuthMessage.LOGIN_INVALID);
+        }
+
         if (!token.getTokenHash().equals(refresh.getRefreshToken())) {
             log.warn("刷新令牌不一致");
             throw new TokenException(AuthMessage.LOGIN_INVALID);
@@ -181,8 +184,5 @@ public class UserServiceImpl implements UserService {
 
         return token;
     }
-
-
-
 
 }

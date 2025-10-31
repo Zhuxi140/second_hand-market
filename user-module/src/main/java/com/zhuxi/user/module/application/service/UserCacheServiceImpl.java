@@ -28,7 +28,7 @@ public class UserCacheServiceImpl implements UserCacheService {
     public void saveBlockList(String token, Role role,long expire) {
         try {
             if (Role.user.equals(role) || Role.Merchant.equals(role)) {
-                redisUtils.ssSetValue(commonKeys.getUserPermissionKey() + token, "1",
+                redisUtils.ssSetValue(commonKeys.getBlockUserTokenKey() + token, "1",
                         expire, TimeUnit.MILLISECONDS);
             } else {
                 redisUtils.ssSetValue(commonKeys.getBlockAdminTokenKey() + token, "1",
