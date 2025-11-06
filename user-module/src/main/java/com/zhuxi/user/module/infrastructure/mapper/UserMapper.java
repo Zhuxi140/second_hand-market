@@ -56,6 +56,7 @@ public interface UserMapper {
     //获取用户信息
     @Select("""
     SELECT
+        id,
         userSn,
         username,
         nickname,
@@ -69,7 +70,7 @@ public interface UserMapper {
     FROM user u JOIN user_role ur ON u.id = ur.user_id
     WHERE userSn = #{userSn}
     """)
-    UserViewVO getUserInfo(String userSn);
+    User getUserInfo(String userSn);
 
     @Select("""
     SELECT
@@ -122,4 +123,12 @@ public interface UserMapper {
 
     @Update("UPDATE refresh_token SET is_delete= 1 WHERE id = #{tokenId}")
     int deleteToken(Long tokenId);
+
+    @Select("""
+    SELECT
+    id, usersn, username, nickname, gender, email, phone, avatar, userstatus,ur.role_id AS role, u.created_at
+    FROM user u JOIN user_role ur ON u.id = ur.user_id
+    WHERE id = #{userId}
+    """)
+    User getAllUserInfo(Long userId);
 }

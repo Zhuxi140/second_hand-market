@@ -62,7 +62,7 @@ public interface UserRepository {
      * @param userSn 用户sn
      * @return 用户信息VO
      */
-    UserViewVO getUserInfo(String userSn);
+    User getUserInfo(String userSn);
 
     /**
      * 获取用户id、角色、状态
@@ -110,6 +110,13 @@ public interface UserRepository {
      * @param tokenId 刷新令牌id
      */
     void deleteToken(Long tokenId);
+
+    /**
+     * 获取用户所有信息(用于写入缓存)
+     * @param userId 用户id
+     * @return 用户信息VO
+     */
+    User getAllUserInfo(Long userId);
 
 
 }

@@ -43,7 +43,7 @@ public interface UserService {
      * @param userSn 用户编号
      * @return 用户信息VO
      */
-    UserViewVO getUserInfo(String userSn);
+    User getUserInfo(String userSn);
 
     /**
      * 修改用户密码

@@ -6,9 +6,8 @@ import com.zhuxi.common.infrastructure.properties.CacheKeyProperties;
 import com.zhuxi.common.infrastructure.properties.JwtProperties;
 import com.zhuxi.common.interfaces.result.PermissionInfo;
 import com.zhuxi.common.interfaces.result.PermissionInfoOne;
-import com.zhuxi.common.shared.constant.RedisMessage;
 import com.zhuxi.common.shared.enums.Role;
-import com.zhuxi.common.shared.exception.CacheException;
+import com.zhuxi.common.shared.utils.JackSonUtils;
 import com.zhuxi.common.shared.utils.RedisUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +45,7 @@ public class PermissionCacheServiceImpl implements PermissionCacheService {
         // 获取用户ID 待完善 : 加入缓存逻辑
         Long userId = repository.getUserId(userSn);
         String key = keys.getUserPermissionKey() + userSn;
-        PermissionInfo permissionInfo = redisUtils.soGetValue(key, PermissionInfo.class);
+        PermissionInfo permissionInfo = JackSonUtils.convert(redisUtils.soGetValue(key), PermissionInfo.class);
         if (isValidCachedInfo(permissionInfo, userId)){
             log.debug("hit the cache");
             return permissionInfo;
@@ -120,7 +119,7 @@ public class PermissionCacheServiceImpl implements PermissionCacheService {
                 .filter(permissionCode -> !banedSet.contains(permissionCode))
                 .toList();
 
-        return new PermissionInfo(null, null, new ArrayList<>(list));
+        return new PermissionInfo(null, rolePermission.get(1).getRole().getId(), new ArrayList<>(list));
     }
 
     /**

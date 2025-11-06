@@ -16,6 +16,6 @@ import java.util.List;
 public class PermissionInfo {
 
     private Long userId;
-    private Role role;
+    private Integer role;
     private List<String> permissionCode;
 }

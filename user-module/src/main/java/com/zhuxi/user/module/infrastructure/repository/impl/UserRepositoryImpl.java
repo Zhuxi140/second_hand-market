@@ -95,12 +95,8 @@ public class UserRepositoryImpl implements UserRepository {
 
     //获取用户信息
     @Override
-    public UserViewVO getUserInfo(String userSn){
-        UserViewVO userInfo = userMapper.getUserInfo(userSn);
-        if (userInfo == null){
-            throw new BusinessException(BusinessMessage.USER_DATA_ERROR);
-        }
-        return userInfo;
+    public User getUserInfo(String userSn){
+        return userMapper.getUserInfo(userSn);
     }
 
 
@@ -160,6 +156,11 @@ public class UserRepositoryImpl implements UserRepository {
             log.error("deleteToken-error: tokenId:{} case:{}", tokenId,CommonMessage.DATABASE_UPDATE_EXCEPTION);
             throw new BusinessException(AuthMessage.LOGIN_INVALID);
         }
+    }
+
+    @Override
+    public User getAllUserInfo(Long userId) {
+        return userMapper.getAllUserInfo(userId);
     }
 
 }

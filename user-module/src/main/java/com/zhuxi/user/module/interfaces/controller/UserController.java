@@ -107,7 +107,8 @@ public class UserController {
     public Result<UserViewVO> getUserInfo(
             @Parameter(description = "用户编号", required = true)
             @PathVariable String userSn) {
-        UserViewVO vo = userService.getUserInfo(userSn);
+        User user = userService.getUserInfo(userSn);
+        UserViewVO vo = UserConvert.COVERT.toUserViewVO(user);
         return Result.success(vo);
     }
 

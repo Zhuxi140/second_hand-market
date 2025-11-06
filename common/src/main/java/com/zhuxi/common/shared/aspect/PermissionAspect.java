@@ -82,7 +82,7 @@ public class PermissionAspect {
             throw new PermissionException(AuthMessage.NO_PERMISSION);
         }
 
-        boolean validRole = checkRole(tokenRole, permissionCheck.Role());
+        boolean validRole = checkRole(tokenRole, permissionCheck.Role(),Role.getRoleById(permissionInfo.getRole()));
         boolean validPermission = checkPermissionCode(permissionInfo.getPermissionCode(),permissionCheck.permission());
         boolean checkPassed;
 
@@ -113,8 +113,8 @@ public class PermissionAspect {
         return permissionCode.contains(requiredPermission);
     }
 
-    private boolean checkRole(Role tokenRole,Role requiredRole){
-        return tokenRole.equals(requiredRole);
+    private boolean checkRole(Role tokenRole,Role requiredRole,Role permissionRole){
+        return tokenRole.equals(requiredRole) && permissionRole.equals(requiredRole);
     }
 
    private void checkSn(String sn,ProceedingJoinPoint joinPoint, PermissionCheck permissionCheck){

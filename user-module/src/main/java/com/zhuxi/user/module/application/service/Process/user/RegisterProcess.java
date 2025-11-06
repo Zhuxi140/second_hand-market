@@ -1,4 +1,4 @@
-package com.zhuxi.user.module.application.service.Process;
+package com.zhuxi.user.module.application.service.Process.user;
 
 import com.zhuxi.common.shared.constant.BusinessMessage;
 import com.zhuxi.common.shared.exception.BusinessException;
