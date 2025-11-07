@@ -6,6 +6,7 @@ import com.zhuxi.common.shared.enums.Role;
 import com.zhuxi.common.shared.exception.BusinessException;
 import com.zhuxi.common.shared.utils.JackSonUtils;
 import com.zhuxi.user.module.application.command.RegisterCommand;
+import com.zhuxi.user.module.domain.user.enums.Gender;
 import com.zhuxi.user.module.domain.user.enums.UserStatus;
 import com.zhuxi.user.module.domain.user.valueObject.Email;
 import com.zhuxi.user.module.domain.user.valueObject.Phone;
@@ -38,14 +39,14 @@ public class User {
     private String avatar;
     private UserStatus userStatus;
     private Role role;
-    private String gender = null;
+    private Gender gender = Gender.UNKNOWN;
     private RefreshToken refreshToken;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     public User(Long id, String userSn, Username username, String password, String nickname,
-                Email email, Phone phone, String gender, String avatar, UserStatus status, Role role, LocalDateTime createdAt, LocalDateTime updatedAt) {
+                Email email, Phone phone, Gender gender, String avatar, UserStatus status, Role role, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.userSn = userSn;
         this.username = username;
@@ -96,7 +97,7 @@ public class User {
     public void updateInfo(UserUpdateInfoDTO update){
         this.nickname = update.getNickname();
         this.email = new Email(update.getEmail());
-        this.gender = update.getGender();
+        this.gender = Gender.getByCode(update.getGender());
     }
 
     /**
@@ -112,7 +113,7 @@ public class User {
         this.nickname = map.containsKey("nickname") ? (String) map.get("nickname") : null;
         this.email = map.containsKey("email") ? JackSonUtils.convert(map.get("email"),Email.class) : null;
         this.phone = map.containsKey("phone") ? JackSonUtils.convert(map.get("phone"),Phone.class) : null;
-        this.gender = map.containsKey("gender") ?  (String) map.get("gender") : null;
+        this.gender = map.containsKey("gender") ?  Gender.getByCode((Integer)map.get("gender")) : null;
         this.role = map.containsKey("role") ?  Role.getRoleById((Integer) map.get("role")) : null;
         this.avatar = map.containsKey("avatar") ? (String) map.get("avatar") : null;
         this.userStatus = map.containsKey("status") ?  UserStatus.getByCode((Integer) map.get("status")) : null;

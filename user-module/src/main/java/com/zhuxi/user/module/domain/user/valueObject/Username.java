@@ -2,10 +2,13 @@ package com.zhuxi.user.module.domain.user.valueObject;
 
 import lombok.Value;
 
+/**
+ * @author zhuxi
+ */
 @Value
 public class Username {
 
-    private String accountName;
+    String accountName;
 
     public Username(String accountName) {
 

@@ -32,8 +32,8 @@ public class UserUpdateInfoDTO {
     
     @Schema(description = "性别", example = "男", allowableValues = {"男", "女", ""})
     @Pattern(
-            regexp = "男|女|^$",
-            message = "性别只能为男、女、或不愿透露"
+            regexp = "1|2|3",
+            message = "性别只能为男(1)、女(2)、或不愿透露(3)"
     )
-    private String gender;
+    private Integer gender;
 }

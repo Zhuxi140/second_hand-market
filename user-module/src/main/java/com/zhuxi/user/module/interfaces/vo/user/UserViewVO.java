@@ -26,8 +26,8 @@ public class UserViewVO {
     @Schema(description = "用户昵称", example = "换换1234")
     private String nickname;
     
-    @Schema(description = "性别", example = "男")
-    private String gender;
+    @Schema(description = "性别", example = "1(男) 2(女) 3(不便透露)")
+    private Integer gender;
     
     @Schema(description = "手机号", example = "13800138000")
     private String phone;

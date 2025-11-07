@@ -27,7 +27,9 @@
             <if test="userStatus != null">
                 userStatus = #{userStatus},
             </if>
+            <if test="gender != null">
                 gender = #{gender}
+            </if>
         </set>
         WHERE id = #{id}
     </update>

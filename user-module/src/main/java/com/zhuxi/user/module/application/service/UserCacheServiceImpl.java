@@ -90,7 +90,7 @@ public class UserCacheServiceImpl implements UserCacheService {
         values.add("avatar");
         values.add(user.getAvatar());
         values.add("gender");
-        values.add(user.getGender());
+        values.add(user.getGender().getCode());
         values.add("role");
         values.add(user.getRole().getId());
         values.add("userStatus");
