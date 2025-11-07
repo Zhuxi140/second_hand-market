@@ -24,8 +24,12 @@ import com.zhuxi.user.module.interfaces.dto.user.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionManager;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -138,9 +142,12 @@ public class UserServiceImpl implements UserService {
         // 清除缓存
         cache.deleteUserInfo(userSn);
 
-        // 异步更新用户信息
+        // 事务提交后异步更新用户信息
         User finalUser1 = user;
-        CompletableFuture.runAsync(()-> {
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                CompletableFuture.runAsync(()-> {
                     User allUserInfo = null;
                     try {
                         int retryCount = 0;
@@ -161,8 +168,9 @@ public class UserServiceImpl implements UserService {
                     }catch (Exception  e){
                         log.error("saveUserInfo_error: {}", e.getMessage());
                     }
-                }
-        );
+                });
+            }
+        });
     }
 
     @Override

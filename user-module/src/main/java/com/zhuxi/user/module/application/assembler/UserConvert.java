@@ -2,6 +2,7 @@ package com.zhuxi.user.module.application.assembler;
 
 import com.zhuxi.common.shared.constant.AuthMessage;
 import com.zhuxi.common.shared.exception.TokenException;
+import com.zhuxi.user.module.domain.user.enums.Gender;
 import com.zhuxi.user.module.domain.user.model.User;
 import com.zhuxi.user.module.domain.user.model.RefreshToken;
 import com.zhuxi.user.module.domain.user.valueObject.Email;
@@ -30,6 +31,7 @@ public interface UserConvert {
     @Mapping(target = "username",source = "username",qualifiedByName = "usernameToString")
     @Mapping(target = "phone",source = "phone",qualifiedByName = "phoneToString")
     @Mapping(target = "email",source = "email",qualifiedByName = "emailToString")
+    @Mapping(target = "gender",source = "gender",qualifiedByName = "genderToString")
     UserViewVO toUserViewVO(User user);
 
     @Mapping(target = "accessToken",source = "accessToken")
@@ -46,6 +48,11 @@ public interface UserConvert {
     @Named("phoneToString")
     default String convertPhone(Phone phone) {
         return phone != null ? phone.getNumber() : null;
+    }
+
+    @Named("genderToString")
+    default Integer convertGender(Gender gender) {
+        return  gender!= null ? gender.getCode() : null;
     }
 
     @Named("emailToString")
