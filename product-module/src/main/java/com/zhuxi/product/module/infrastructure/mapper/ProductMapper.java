@@ -58,4 +58,10 @@ public interface ProductMapper {
     """)
     List<MeShProductVO> getMeShProductList(Long userId);
 
+    @Select("SELECT name FROM product_condition WHERE id = #{conditionId}")
+    String gerConditionNameById(Long conditionId);
+
+    @Select("SELECT name FROM product_sort WHERE id = #{categoryId}")
+    String getCategoryNameById(Long categoryId);
+
 }

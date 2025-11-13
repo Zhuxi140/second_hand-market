@@ -1,6 +1,6 @@
 package com.zhuxi.user.module.application.command;
 
-import com.zhuxi.user.module.infrastructure.config.DefaultProperties;
+import com.zhuxi.common.infrastructure.properties.CacheKeyProperties;
 import com.zhuxi.user.module.interfaces.dto.user.UserRegisterDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,7 +12,7 @@ import lombok.Getter;
 @Getter
 public class RegisterCommand {
     private UserRegisterDTO register;
-    private DefaultProperties defaultProperties;
+    private CacheKeyProperties defaultProperties;
     private String hashPassword;
     private String nickName;
 }

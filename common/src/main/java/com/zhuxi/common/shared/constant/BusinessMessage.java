@@ -28,6 +28,7 @@ public class BusinessMessage {
     public static final String UPDATE_ADDRESS_ERROR = "修改地址失败,请稍后重试";
     public static final String DEFAULT_ADDRESS_JUST_IS_ONE = "默认地址只能有一个";
     public static final String ALREADY_DEFAULT_ADDRESS = "该地址已经是默认地址";
+    public static final String NO_EFFECTIVE_ADDRESS = "无效地址";
 
     // -----------文件类-------------------------
     public static final String FILE_DATA_SAVE_ERROR = "文件信息写入失败，请稍后重试";

@@ -49,4 +49,6 @@ public class ProductDetailVO {
     private Long hostScore;
     @Schema(description = "商品图片列表")
     private List<ProductImage> productImages;
+
+
 }

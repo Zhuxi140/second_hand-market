@@ -126,4 +126,14 @@ public class ProductRepositoryImpl implements ProductRepository {
             throw new BusinessException(BusinessMessage.GET_SH_PRODUCT_LIST_ERROR);
         }
     }
+
+    @Override
+    public String gerConditionNameById(Long conditionId) {
+        return productMapper.gerConditionNameById(conditionId);
+    }
+
+    @Override
+    public String getCategoryNameById(Long categoryId) {
+        return productMapper.getCategoryNameById(categoryId);
+    }
 }

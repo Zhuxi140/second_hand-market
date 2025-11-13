@@ -90,10 +90,10 @@ public class UserAddressRepositoryImpl implements UserAddressRepository {
 
     //删除地址
     @Override
-    public void deleteAddress(String addressSn) {
-        int result = userAddressMapper.deleteBySn(addressSn);
+    public void deleteAddress(Long addressId) {
+        int result = userAddressMapper.deleteBySn(addressId);
         if (result <= 0){
-            log.error("addressSn:{}-\ndeleteAddress-case:{}",addressSn,CommonMessage.DATABASE_DELETE_EXCEPTION);
+            log.error("addressId:{}-\ndeleteAddress-case:{}",addressId,CommonMessage.DATABASE_DELETE_EXCEPTION);
             throw new BusinessException(BusinessMessage.DELETE_ADDRESS_ERROR);
         }
     }
@@ -107,5 +107,15 @@ public class UserAddressRepositoryImpl implements UserAddressRepository {
             throw new BusinessException(BusinessMessage.USER_DATA_ERROR);
         }
         return list;
+    }
+
+    @Override
+    public Long checkIdEffective(String addressSn) {
+        Long addressId = userAddressMapper.checkIdEffective(addressSn);
+        if (addressId == null || addressId <= 0){
+            log.error("addressSn:{}-\ncheckIdEffective-case:{}",addressSn,CommonMessage.DATABASE_SELECT_EXCEPTION);
+            throw new BusinessException(BusinessMessage.NO_EFFECTIVE_ADDRESS);
+        }
+        return addressId;
     }
 }

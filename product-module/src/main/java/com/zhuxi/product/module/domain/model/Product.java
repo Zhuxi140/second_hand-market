@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -25,8 +26,10 @@ public class Product {
     private Title title;
     private String description;
     private Long categoryId;
+    private String categoryName;
     private Price price;
     private Integer conditionId;
+    private String conditionName;
     private ProductStatus status;
     private Location location;
     private Integer viewCount;
@@ -59,15 +62,19 @@ public class Product {
      * @param sh 发布二手商品信息
      * @param sellerId 卖家id
      */
-    public void publish(PublishSHDTO  sh,Long sellerId){
+    public void publish(PublishSHDTO  sh, Long sellerId, List<String> otherNames){
         this.title = new Title(sh.getTitle());
         this.description = sh.getDescription();
         this.categoryId = sh.getCategoryId();
+        this.categoryName = otherNames.get(0);
         this.price = new Price(sh.getPrice());
         this.conditionId = sh.getConditionId();
+        this.conditionName = otherNames.get(1);
         this.location = new Location(sh.getLocation());
         this.modifyToDraft(IsDraft.getByCode(sh.getIsDraft()));
-        this.productSn = new ProductSn(UUID.randomUUID().toString());
+        String string = UUID.randomUUID().toString();
+        String sn = string.replace("-", "");
+        this.productSn = new ProductSn(sn);
         this.sellerId = sellerId;
     }
 

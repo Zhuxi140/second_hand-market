@@ -3,9 +3,11 @@ package com.zhuxi.product.module.application.service;
 import com.zhuxi.common.shared.constant.BusinessMessage;
 import com.zhuxi.common.shared.exception.BusinessException;
 import com.zhuxi.common.shared.exception.PersistenceException;
+import com.zhuxi.product.module.application.service.process.PublishShProcess;
 import com.zhuxi.product.module.domain.enums.IsDraft;
 import com.zhuxi.product.module.domain.model.Product;
 import com.zhuxi.product.module.domain.repository.ProductRepository;
+import com.zhuxi.product.module.domain.service.ProductCacheService;
 import com.zhuxi.product.module.domain.service.ProductService;
 import com.zhuxi.product.module.interfaces.dto.PublishSHDTO;
 import com.zhuxi.product.module.interfaces.dto.UpdateProductDTO;
@@ -20,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * @author zhuxi
@@ -30,12 +33,21 @@ import java.util.List;
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository repository;
+    private final ProductCacheService cache;
+    private final PublishShProcess publishShProcess;
 
 
     @Override
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public List<CategoryTreeVO> getCategoryList(int limit, int offset) {
-        List<CategoryVO> list = repository.getCategoryList(limit, offset);
+
+        List<CategoryVO> list = cache.getCategoryList();
+        if (list == null) {
+            list = repository.getCategoryList(limit, offset);
+            // 异步缓存
+            List<CategoryVO> finalList = list;
+            CompletableFuture.runAsync(() -> cache.saveCategoryList(finalList));
+        }
 
         // 构建树形结构
         List<CategoryTreeVO> treeVO = list.stream()
@@ -45,21 +57,22 @@ public class ProductServiceImpl implements ProductService {
         return buildTree(treeVO);
     }
 
-
     @Override
-    @Transactional(rollbackFor = BusinessException.class)
     public String publishSh(PublishSHDTO sh, String userSn) {
+        List<String> otherNames = publishShProcess.getOtherNames(sh.getCategoryId(), sh.getCategoryId());
         Product product = new Product();
-        product.publish(sh,1L);
+        product.publish(sh,1L,otherNames); //
+
         try{
             repository.save(product);
         }catch (PersistenceException e){
             saveDraft( product);
             throw new BusinessException(BusinessMessage.SAVE_PRODUCT_ERROR_SAVE_DRAFT);
         }
+        // 异步缓存
+        CompletableFuture.runAsync(()->cache.saveShProduct(product,product.getProductSn().getSn()));
         return product.getProductSn().getSn();
     }
-
 
     @Override
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)

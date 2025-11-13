@@ -1,4 +1,4 @@
-package com.zhuxi.user.module.application.service;
+package com.zhuxi.user.module.application.service.cache;
 
 import com.zhuxi.common.infrastructure.properties.CacheKeyProperties;
 import com.zhuxi.common.shared.constant.CacheMessage;
@@ -7,13 +7,11 @@ import com.zhuxi.common.shared.exception.CacheException;
 import com.zhuxi.common.shared.utils.RedisUtils;
 import com.zhuxi.user.module.domain.user.model.User;
 import com.zhuxi.user.module.domain.user.service.UserCacheService;
-import com.zhuxi.user.module.infrastructure.config.DefaultProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.scripting.support.ResourceScriptSource;
 import org.springframework.stereotype.Service;
-
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -21,30 +19,30 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author zhuxi
  */
-@Slf4j
+@Slf4j(topic = "UserCacheServiceImpl")
 @Service
 public class UserCacheServiceImpl implements UserCacheService {
 
     private final CacheKeyProperties commonKeys;
     private final RedisUtils redisUtils;
-    private final DefaultProperties properties;
+    private final CacheKeyProperties properties;
     private final DefaultRedisScript<Long> hashSetWithExpireScript;
     private final DefaultRedisScript<List<Object>> getUserInfoScript;
 
-    public UserCacheServiceImpl(CacheKeyProperties commonKeys, RedisUtils redisUtils, DefaultProperties properties) {
+    public UserCacheServiceImpl(CacheKeyProperties commonKeys, RedisUtils redisUtils, CacheKeyProperties properties) {
         this.commonKeys = commonKeys;
         this.redisUtils = redisUtils;
         this.properties = properties;
         this.getUserInfoScript = new DefaultRedisScript<>();
         this.hashSetWithExpireScript = new DefaultRedisScript<>();
-        ClassPathResource classPathResource1 = new ClassPathResource("lua/getUserInfo.lua");
-        ClassPathResource classPathResource = new ClassPathResource("lua/saveUserInfo.lua");
+        ClassPathResource classPathResource1 = new ClassPathResource("lua/getInfo.lua");
+        ClassPathResource classPathResource = new ClassPathResource("lua/saveInfo.lua");
         ResourceScriptSource resourceScriptSource1 = new ResourceScriptSource(classPathResource1);
         ResourceScriptSource resourceScriptSource = new ResourceScriptSource(classPathResource);
         hashSetWithExpireScript.setScriptSource(resourceScriptSource);
+        hashSetWithExpireScript.setResultType(Long.class);
         getUserInfoScript.setScriptSource(resourceScriptSource1);
         getUserInfoScript.setResultType((Class<List<Object>>) (Class<?>) List.class);
-        hashSetWithExpireScript.setResultType(Long.class);
     }
 
     @Override
@@ -74,7 +72,7 @@ public class UserCacheServiceImpl implements UserCacheService {
         keys.add(hashKey);
         List<Object> values = new ArrayList<>();
 
-        values.add(properties.getUserInfoExpire());
+        values.add(properties.getDefaultInfoExpire());
         values.add("id");
         values.add(user.getId());
         values.add("userSn");
@@ -112,7 +110,7 @@ public class UserCacheServiceImpl implements UserCacheService {
         List<String> key = new ArrayList<>();
         key.add(hashKey);
         List<Object> values = new ArrayList<>();
-        values.add(properties.getUserInfoExpire());
+        values.add(properties.getDefaultInfoExpire());
 
         if (keys.contains("id")){
             values.add("id");
@@ -172,7 +170,7 @@ public class UserCacheServiceImpl implements UserCacheService {
         List<String> key = new ArrayList<>();
         key.add(hashKey);
         List<Object> value = new ArrayList<>();
-        value.add(properties.getUserInfoExpire());
+        value.add(properties.getDefaultInfoExpire());
         value.addAll(values);
 
         redisUtils.executeLuaScript(hashSetWithExpireScript, key, value);

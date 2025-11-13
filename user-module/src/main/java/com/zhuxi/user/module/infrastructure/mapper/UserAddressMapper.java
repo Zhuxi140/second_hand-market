@@ -46,8 +46,8 @@ public interface UserAddressMapper {
     int cancelDefault(@Param("addressId") Long addressId);
     
     // 根据Sn删除地址
-    @Delete("DELETE FROM user_address WHERE addressSn = #{addressSn}")
-    int deleteBySn(String addressSn);
+    @Delete("DELETE FROM user_address WHERE id = #{addressId}")
+    int deleteBySn(Long addressId);
 
 
     @Select("""
@@ -65,6 +65,9 @@ public interface UserAddressMapper {
     FROM user_address WHERE user_id = #{userId}
     """)
     List<UserAddressVO> gerListAddress(Long userId);
+
+    @Select("SELECT id FROM user_address WHERE addressSn = #{addressSn}")
+    Long checkIdEffective(String addressSn);
 
 
 }

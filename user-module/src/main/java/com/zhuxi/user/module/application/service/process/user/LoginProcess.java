@@ -1,12 +1,12 @@
-package com.zhuxi.user.module.application.service.Process.user;
+package com.zhuxi.user.module.application.service.process.user;
 
+import com.zhuxi.common.infrastructure.properties.CacheKeyProperties;
 import com.zhuxi.common.shared.constant.BusinessMessage;
 import com.zhuxi.common.shared.exception.BusinessException;
 import com.zhuxi.common.shared.utils.BCryptUtils;
 import com.zhuxi.user.module.domain.user.model.User;
 import com.zhuxi.user.module.domain.user.repository.UserRepository;
 import com.zhuxi.user.module.domain.user.model.RefreshToken;
-import com.zhuxi.user.module.infrastructure.config.DefaultProperties;
 import com.zhuxi.user.module.interfaces.dto.user.UserLoginDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -58,10 +58,10 @@ public class LoginProcess {
      * 登录
      * @param outcome 登录结果
      * @param user 用户信息
-     * @param defaultProperties 默认配置
+     * @param properties 默认配置
      */
     @Transactional(rollbackFor = Exception.class)
-    public void login(boolean outcome, User user, DefaultProperties defaultProperties) {
+    public void login(boolean outcome, User user, CacheKeyProperties properties) {
         if (outcome) {
             RefreshToken freshToken = userRepository.getTokenByUserId(user.getId());
             RefreshToken token;
@@ -71,7 +71,7 @@ public class LoginProcess {
                 token1.buildToken(
                         user.getId(),
                         UUID.randomUUID().toString(),
-                        LocalDateTime.now().plusDays(defaultProperties.getRefreshExpire())
+                        LocalDateTime.now().plusDays(properties.getRefreshExpire())
                         );
                 token = token1;
                 // 保存令牌

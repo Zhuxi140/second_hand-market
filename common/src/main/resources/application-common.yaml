@@ -10,9 +10,24 @@ jwt:
   user-expire: 1800
   user-header: user-token
 
+
 cache:
   key:
+    #权限/安全
     block-user-token-key: "token:black:user:"
     block-admin-token-key: "token:black:admin:"
     user-permission-key: "user:permission:"
     admin-permission-key: "admin:permission:"
+    #用户
+    userid-map-sn-key: "user:map:idToSn"
+    default-user-avatar: http://localhost:8080/Default_avatar/default.jpeg
+    refresh-expire: 7  # 长期token时间  单位天
+    user-info-key: "user:info:"
+    default-info-expire: 1800 #秒
+    #地址
+    address-info-key: "user:address:"
+    #商品
+    category-key: "product:category"
+    sh-product-key: "product:shProduct:"
+    sh-product-expire: 1800 #秒
+    me-product-key: "product:user:shProduct:"

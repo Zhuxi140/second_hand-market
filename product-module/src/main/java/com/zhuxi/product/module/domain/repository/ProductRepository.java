@@ -73,7 +73,26 @@ public interface ProductRepository {
      */
     void delProduct(Long productId);
 
-
+    /**
+     * 获取我的二手商品列表
+     * @param userId 用户id
+     * @return 我的二手商品列表
+     */
     List<MeShProductVO> getMeShProductList(Long userId);
+
+
+    /**
+     * 根据成色id获取成色名称
+     * @param conditionId 成色id
+     * @return 成色名称
+     */
+    String gerConditionNameById(Long conditionId);
+
+    /**
+     * 根据分类id获取分类名称
+     * @param categoryId 分类id
+     * @return 分类名称
+     */
+    String getCategoryNameById(Long categoryId);
 
 }

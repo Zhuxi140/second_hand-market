@@ -1,35 +1,32 @@
 package com.zhuxi.user.module.application.service;
 
 
+import com.zhuxi.common.infrastructure.properties.CacheKeyProperties;
 import com.zhuxi.common.shared.constant.BusinessMessage;
 import com.zhuxi.common.shared.constant.AuthMessage;
-import com.zhuxi.common.shared.constant.CacheMessage;
 import com.zhuxi.common.shared.enums.Role;
 import com.zhuxi.common.shared.exception.BusinessException;
 import com.zhuxi.common.shared.exception.CacheException;
 import com.zhuxi.common.shared.exception.TokenException;
 import com.zhuxi.common.shared.utils.BCryptUtils;
 import com.zhuxi.common.shared.utils.JwtUtils;
-import com.zhuxi.user.module.application.service.Process.user.ChangePasswordProcess;
-import com.zhuxi.user.module.application.service.Process.user.LoginProcess;
-import com.zhuxi.user.module.application.service.Process.user.RegisterProcess;
+import com.zhuxi.user.module.application.service.process.user.ChangePasswordProcess;
+import com.zhuxi.user.module.application.service.process.user.LoginProcess;
+import com.zhuxi.user.module.application.service.process.user.RegisterProcess;
 import com.zhuxi.user.module.domain.user.enums.UserStatus;
 import com.zhuxi.user.module.domain.user.model.User;
 import com.zhuxi.user.module.domain.user.repository.UserRepository;
 import com.zhuxi.user.module.domain.user.service.UserCacheService;
 import com.zhuxi.user.module.domain.user.service.UserService;
 import com.zhuxi.user.module.domain.user.model.RefreshToken;
-import com.zhuxi.user.module.infrastructure.config.DefaultProperties;
 import com.zhuxi.user.module.interfaces.dto.user.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.TransactionManager;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -45,7 +42,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository repository;
     private final BCryptUtils bCryptUtils;
-    private final DefaultProperties defaultProperties;
+    private final CacheKeyProperties properties;
     private final UserCacheService cache;
     private final JwtUtils jwtUtils;
     private final RegisterProcess registerProcess;
@@ -61,7 +58,7 @@ public class UserServiceImpl implements UserService {
         String nickName = registerProcess.setDefaultNickName(register);
 
         //注册
-        User user = registerProcess.buildUser(register, nickName,bCryptUtils,defaultProperties);
+        User user = registerProcess.buildUser(register, nickName,bCryptUtils,properties);
 
         //写入
         registerProcess.persistUserData(user);
@@ -79,7 +76,7 @@ public class UserServiceImpl implements UserService {
         boolean outcome = loginProcess.checkPassword(login, user, bCryptUtils);
 
         //登录
-        loginProcess.login(outcome, user, defaultProperties);
+        loginProcess.login(outcome, user, properties);
 
         //异步缓存用户信息
         asyncSaveUserInfo( user.getId(), user.getUserSn());
@@ -113,7 +110,6 @@ public class UserServiceImpl implements UserService {
     @Transactional(rollbackFor = BusinessException.class)
     public void updateInfo(UserUpdateInfoDTO update, String userSn) {
 
-        log.error("update:{}", update);
         //从 缓存中获取用户信息
         List<String> keys = List.of("id", "userStatus", "role");
         User user = cache.getUserInfo(userSn,keys);
@@ -136,7 +132,6 @@ public class UserServiceImpl implements UserService {
         user.updateInfo(update);
 
         // 写入数据库
-        log.error("user:{}", user);
         repository.save(user);
 
         // 清除缓存
