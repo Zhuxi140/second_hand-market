@@ -5,9 +5,11 @@ import com.zhuxi.common.infrastructure.properties.CacheKeyProperties;
 import com.zhuxi.common.shared.utils.JackSonUtils;
 import com.zhuxi.common.shared.utils.RedisUtils;
 import com.zhuxi.product.module.domain.model.Product;
+import com.zhuxi.product.module.domain.model.ProductStatic;
 import com.zhuxi.product.module.domain.service.ProductCacheService;
 import com.zhuxi.product.module.interfaces.vo.CategoryVO;
 import com.zhuxi.product.module.interfaces.vo.ProductDetailVO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.scripting.support.ResourceScriptSource;
@@ -22,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author zhuxi
  */
+@Slf4j
 @Service
 public class ProductCacheServiceImpl implements ProductCacheService {
     private final CacheKeyProperties properties;
@@ -46,6 +49,9 @@ public class ProductCacheServiceImpl implements ProductCacheService {
 
     @Override
     public void saveCategoryList(List<CategoryVO> list) {
+        if (list == null){
+            log.warn("category-list-is-null,商品分类缓存失败");
+        }
         String json = JackSonUtils.toJson(list);
         redisUtils.ssSetValue(properties.getCategoryKey(), json, 7, TimeUnit.DAYS);
     }
@@ -61,7 +67,10 @@ public class ProductCacheServiceImpl implements ProductCacheService {
 
     @Override
     public void saveShProduct(Product product,String productSn) {
-
+        if (product == null){
+            log.warn("product-is-null,商品信息缓存失败-productSn:{}", productSn);
+            return;
+        }
         List<String> hashKey = new ArrayList<>();
         hashKey.add(properties.getShProductKey()+productSn);
         List<Object> values = new ArrayList<>();
@@ -80,10 +89,14 @@ public class ProductCacheServiceImpl implements ProductCacheService {
         values.add(product.getDescription());
         values.add("categoryId");
         values.add(product.getCategoryId());
+        values.add("categoryName");
+        values.add(product.getCategoryName());
         values.add("price");
         values.add(product.getPrice().getPrice());
         values.add("conditionId");
         values.add(product.getConditionId());
+        values.add("conditionName");
+        values.add(product.getConditionName());
         values.add("status");
         values.add(product.getStatus().getCode());
         values.add("location");
@@ -106,9 +119,26 @@ public class ProductCacheServiceImpl implements ProductCacheService {
     }
 
     @Override
-    public ProductDetailVO getShProduct(String productSn) {
+    public void saveProductStatic(List<ProductStatic> pStatics, String productSn) {
+        if (pStatics == null){
+            log.warn("product-static-list-is-null,商品静态资源缓存失败 productSn:{}", productSn);
+            return;
+        }
+        String json = JackSonUtils.toJson(pStatics);
+        redisUtils.ssSetValue(
+                properties.getProductStaticKey() + productSn,
+                json,
+                properties.getShProductExpire(),
+                TimeUnit.SECONDS
+        );
+    }
 
-        List<String> values = List.of("productSn","sellerId", "title", "description", "categoryId", "price", "conditionId", "status", "location", "viewCount", "hostScore");
+    @Override
+    public List<Object> getShProductDetail(String productSn) {
+        if (productSn == null){
+            throw new IllegalArgumentException("productSn-is-null");
+        }
+        List<String> values = List.of("productSn","sellerId", "title", "description", "categoryId","categoryName", "price", "conditionId","conditionName","status", "location", "viewCount", "hostScore");
         List<String> hashKey = List.of(properties.getShProductKey() + productSn);
         Object obj = redisUtils.executeLuaScript(getScript, hashKey, values);
         if (obj == null){
@@ -130,16 +160,38 @@ public class ProductCacheServiceImpl implements ProductCacheService {
         // 获取id-sn映射
         Object seller = redisUtils.hashGet(properties.getShProductKey() + productSn, sellerId);
         if (seller == null){
-            return null;
+            ArrayList<Object> list = new ArrayList<>();
+            list.add(productInfo);
+            return list;
         }
 
         //获取用户信息
         String userSn = seller.toString();
         List<Object> sellerInfo = redisUtils.hashGetAll(properties.getUserInfoKey() + userSn, List.of("nickname", "avatar"));
         if (sellerInfo == null){
-            return null;
+            ArrayList<Object> list = new ArrayList<>();
+            list.add(productInfo);
+            list.add(userSn);
+            return list;
         }
-        return null;
+
+        String staticKey = properties.getProductStaticKey() + productSn;
+        String json = redisUtils.ssGetValue(staticKey);
+        if (json == null){
+            ArrayList<Object> list = new ArrayList<>();
+            list.add(productInfo);
+            list.add(userSn);
+            list.add(sellerInfo);
+            return list;
+        }
+        List<ProductStatic> productStatics = JackSonUtils.readValue(json, new TypeReference<List<ProductStatic>>() {});
+
+        return List.of(
+                productInfo,
+                userSn,
+                sellerInfo,
+                productStatics
+        );
     }
 
 }

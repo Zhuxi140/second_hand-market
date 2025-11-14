@@ -38,7 +38,7 @@ public class ProductDetailVO {
     @Schema(description = "商品分类名称")
     private String categoryName;
     @Schema(description = "商品状态")
-    private ProductStatus status;
+    private Integer status;
     @Schema(description = "商品所在地区")
     private String location;
     @Schema(description = "商品描述")

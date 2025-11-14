@@ -1,6 +1,7 @@
 package com.zhuxi.product.module.infrastructure.mapper;
 
 import com.zhuxi.product.module.domain.model.Product;
+import com.zhuxi.product.module.domain.model.ProductStatic;
 import com.zhuxi.product.module.interfaces.param.ShProductParam;
 import com.zhuxi.product.module.interfaces.vo.*;
 import org.apache.ibatis.annotations.Delete;
@@ -63,5 +64,14 @@ public interface ProductMapper {
 
     @Select("SELECT name FROM product_sort WHERE id = #{categoryId}")
     String getCategoryNameById(Long categoryId);
+
+    @Select("""
+    SELECT
+    ps.id,ps.product_id,ps.sku_id,ps.image_url,ps.image_type,ps.sort_order
+    FROM product_static ps JOIN product p ON ps.product_id = p.id
+    WHERE p.id = #{productId}
+    ORDER BY ps.sort_order ASC
+    """)
+    List<ProductStatic> getProductStatics(Long productId);
 
 }

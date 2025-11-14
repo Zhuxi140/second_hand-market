@@ -1,7 +1,6 @@
 package com.zhuxi.product.module.domain.objectValue;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import java.util.Objects;
 
