@@ -1,6 +1,7 @@
 package com.zhuxi.user.module.application.service;
 
 
+import com.zhuxi.common.domain.service.CommonCacheService;
 import com.zhuxi.common.infrastructure.properties.CacheKeyProperties;
 import com.zhuxi.common.shared.constant.BusinessMessage;
 import com.zhuxi.common.shared.constant.AuthMessage;
@@ -44,6 +45,7 @@ public class UserServiceImpl implements UserService {
     private final BCryptUtils bCryptUtils;
     private final CacheKeyProperties properties;
     private final UserCacheService cache;
+    private final CommonCacheService commonCache;
     private final JwtUtils jwtUtils;
     private final RegisterProcess registerProcess;
     private final LoginProcess loginProcess;
@@ -92,7 +94,12 @@ public class UserServiceImpl implements UserService {
         long expire = jwtUtils.validateToken(token, Role.user);
 
         // 验证长时token存在  若存在将其逻辑删除
-        Long userId = repository.getUserId(userSn);
+        Long userId = commonCache.getUserIdBySn(userSn);
+        if (userId == null){
+            userId = repository.getUserId(userSn);
+            Long finalUserId = userId;
+            CompletableFuture.runAsync(() ->commonCache.saveUserIdOrSn(userSn, finalUserId, 3));
+        }
         Long id = repository.checkFreshTokenExist(userId);
         if (id != null) {
             repository.deleteToken(id);
@@ -205,7 +212,7 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public RefreshToken renewJwt(RefreshDTO refresh) {
 
-        Long userId = (Long)cache.getOneInfo(refresh.getUserSn(), "id");
+        Long userId = commonCache.getUserIdBySn(refresh.getUserSn());
         if (userId == null) {
             //未命中
             userId = repository.getUserId(refresh.getUserSn());
@@ -233,14 +240,15 @@ public class UserServiceImpl implements UserService {
         }
         token.setRole(role);
 
-
         //异步缓存用户角色信息
-        Long finalUserId = userId;
         Role finalRole = role;
+        Long finalUserId = userId;
         CompletableFuture.runAsync(()-> {
+            CompletableFuture.runAsync(() ->
+                    commonCache.saveUserIdOrSn(refresh.getUserSn(), finalUserId, 3)
+            );
+
             List<Object> values = List.of(
-                    "id",
-                    finalUserId,
                     "role",
                     finalRole.getId()
             );

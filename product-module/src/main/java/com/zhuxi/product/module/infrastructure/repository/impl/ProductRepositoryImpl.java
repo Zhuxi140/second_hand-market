@@ -5,6 +5,7 @@ import com.zhuxi.common.shared.constant.CommonMessage;
 import com.zhuxi.common.shared.exception.BusinessException;
 import com.zhuxi.common.shared.exception.PersistenceException;
 import com.zhuxi.product.module.domain.model.Product;
+import com.zhuxi.product.module.domain.model.ProductStatic;
 import com.zhuxi.product.module.domain.repository.ProductRepository;
 import com.zhuxi.product.module.infrastructure.mapper.ProductMapper;
 import com.zhuxi.product.module.interfaces.param.ShProductParam;
@@ -135,5 +136,10 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     public String getCategoryNameById(Long categoryId) {
         return productMapper.getCategoryNameById(categoryId);
+    }
+
+    @Override
+    public List<ProductStatic> getProductStatics(Long productId) {
+        return productMapper.getProductStatics(productId);
     }
 }

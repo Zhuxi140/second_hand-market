@@ -1,5 +1,6 @@
 package com.zhuxi.product.module.domain.enums;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -7,7 +8,6 @@ import lombok.Getter;
  * @author zhuxi
  */
 @Getter
-@AllArgsConstructor
 public enum ProductStatus {
     NO_PUBLISH(0,"未发布"),
     SALES(1,"在售"),
@@ -17,6 +17,12 @@ public enum ProductStatus {
 
     private final Integer code;
     private final String message;
+
+    @JsonCreator
+    ProductStatus(Integer code, String message) {
+        this.code = code;
+        this.message = message;
+    }
 
     public static ProductStatus getByCode(Integer code) {
         for (ProductStatus value : values()) {

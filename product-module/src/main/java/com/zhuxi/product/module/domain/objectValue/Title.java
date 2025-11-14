@@ -1,5 +1,6 @@
 package com.zhuxi.product.module.domain.objectValue;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 
 import java.util.Objects;
@@ -11,8 +12,8 @@ import java.util.Objects;
 public class Title {
     private final String title;
 
+    @JsonCreator
     public Title(String title) {
-
         if (title == null || title.isBlank()){
             throw new IllegalArgumentException("商品标题不能为空或为null");
         }

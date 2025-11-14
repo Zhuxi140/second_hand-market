@@ -1,6 +1,7 @@
 package com.zhuxi.product.module.domain.repository;
 
 import com.zhuxi.product.module.domain.model.Product;
+import com.zhuxi.product.module.domain.model.ProductStatic;
 import com.zhuxi.product.module.interfaces.param.ShProductParam;
 import com.zhuxi.product.module.interfaces.vo.*;
 
@@ -94,5 +95,13 @@ public interface ProductRepository {
      * @return 分类名称
      */
     String getCategoryNameById(Long categoryId);
+
+
+    /**
+     * 获取商品静态信息
+     * @param productId 商品id
+     * @return 商品静态信息列表
+     */
+    List<ProductStatic> getProductStatics(Long productId);
 
 }

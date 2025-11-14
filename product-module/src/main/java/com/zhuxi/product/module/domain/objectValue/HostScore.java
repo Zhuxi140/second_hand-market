@@ -1,5 +1,6 @@
 package com.zhuxi.product.module.domain.objectValue;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 
 import java.math.BigDecimal;
@@ -12,6 +13,7 @@ import java.util.Objects;
 public class HostScore {
     private final BigDecimal score;
 
+    @JsonCreator
     public HostScore(BigDecimal score) {
         if (score == null || score.compareTo(BigDecimal.ZERO) < 0){
             throw new IllegalArgumentException("评分不能小于0或为null");

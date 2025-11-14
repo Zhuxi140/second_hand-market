@@ -1,5 +1,6 @@
 package com.zhuxi.product.module.domain.enums;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -7,7 +8,6 @@ import lombok.Getter;
  * @author zhuxi
  */
 @Getter
-@AllArgsConstructor
 public enum ImageType {
 
     Cover(1,"封面图"),
@@ -16,6 +16,12 @@ public enum ImageType {
 
     private final Integer code;
     private final String message;
+
+    @JsonCreator
+    ImageType(Integer code, String message) {
+        this.code = code;
+        this.message = message;
+    }
 
     public static ImageType getByCode(Integer code) {
         for (ImageType value : ImageType.values()) {

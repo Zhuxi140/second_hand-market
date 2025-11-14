@@ -1,5 +1,7 @@
 package com.zhuxi.product.module.domain.objectValue;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import java.util.Objects;
 
@@ -10,6 +12,7 @@ import java.util.Objects;
 public class ProductSn {
     private final String sn;
 
+    @JsonCreator
     public ProductSn(String sn) {
         if (sn == null || sn.isBlank()){
             throw new IllegalArgumentException("商品编号不能为空或为null");

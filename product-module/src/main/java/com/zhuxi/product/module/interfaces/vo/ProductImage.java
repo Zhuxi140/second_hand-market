@@ -19,6 +19,4 @@ public class ProductImage {
     private String imageUrl;
     @Schema(description = "图片类型")
     private Integer type;
-    @Schema(description = "排序依据数值（值越小越靠前）")
-    private Integer sortOrder;
 }

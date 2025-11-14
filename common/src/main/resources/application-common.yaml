@@ -31,3 +31,4 @@ cache:
     sh-product-key: "product:shProduct:"
     sh-product-expire: 1800 #秒
     me-product-key: "product:user:shProduct:"
+    product-static-key: "product:static:"
