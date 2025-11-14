@@ -1,6 +1,6 @@
-../common/target/classes
-.idea
-.iml
-.class
-*Test.java
-main/src/test/java
+**/target/
+.idea/
+*.iml
+*.class
+.DS_Store
+Thumbs.db
