@@ -2,12 +2,17 @@ package com.zhuxi.common.applicaiton.cache;
 
 import com.zhuxi.common.domain.service.CommonCacheService;
 import com.zhuxi.common.infrastructure.properties.CacheKeyProperties;
+import com.zhuxi.common.shared.constant.CacheMessage;
+import com.zhuxi.common.shared.exception.CacheException;
 import com.zhuxi.common.shared.utils.RedisUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author zhuxi
@@ -51,4 +56,10 @@ public class CommonCacheServiceImpl implements CommonCacheService {
             throw new IllegalArgumentException("type参数格式不合法");
         }
     }
+
+    @Override
+    public void saveNullValue(String key) {
+        redisUtils.ssSetValue(key, properties.getNULL_VALUE(), 2, TimeUnit.MINUTES);
+    }
+
 }

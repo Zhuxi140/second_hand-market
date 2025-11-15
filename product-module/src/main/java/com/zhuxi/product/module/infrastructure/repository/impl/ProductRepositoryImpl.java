@@ -97,15 +97,20 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     @Override
-    public ProductDetailVO getShProductDetail(String productSn) {
+    public ProductDetailVO getShProductDetail(String productSn,boolean isGetStatic) {
         Long productId = productMapper.getProductIdBySn(productSn);
         if (productId == null){
             log.error("getShProductDetail:getShProductDetail-case:{},productSn:{}", CommonMessage.DATABASE_SELECT_EXCEPTION,productSn);
-            throw new BusinessException(BusinessMessage.GET_SH_PRODUCT_LIST_ERROR);
+            throw new BusinessException(BusinessMessage.PRODUCT_ID_IS_NULL);
         }
         ProductDetailVO productDetail = productMapper.getShProductDetail(productId);
-        List<ProductImage> productImages = productMapper.getProductImages(productId);
-        productDetail.setProductImages(productImages);
+        if (productDetail == null){
+            return null;
+        }
+        if (isGetStatic){
+            List<ProductImage> productImages = productMapper.getProductImages(productId);
+            productDetail.setProductImages(productImages);
+        }
         return productDetail;
     }
 

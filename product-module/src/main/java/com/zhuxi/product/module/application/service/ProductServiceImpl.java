@@ -1,12 +1,12 @@
 package com.zhuxi.product.module.application.service;
 
+import com.zhuxi.common.domain.service.CommonCacheService;
+import com.zhuxi.common.infrastructure.properties.CacheKeyProperties;
 import com.zhuxi.common.shared.constant.BusinessMessage;
 import com.zhuxi.common.shared.exception.BusinessException;
 import com.zhuxi.common.shared.exception.PersistenceException;
-import com.zhuxi.common.shared.utils.JackSonUtils;
 import com.zhuxi.product.module.application.assembler.ToProductDetailVO;
 import com.zhuxi.product.module.application.service.process.PublishShProcess;
-import com.zhuxi.product.module.domain.enums.IsDraft;
 import com.zhuxi.product.module.domain.model.Product;
 import com.zhuxi.product.module.domain.model.ProductStatic;
 import com.zhuxi.product.module.domain.repository.ProductRepository;
@@ -37,7 +37,9 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository repository;
     private final ProductCacheService cache;
+    private final CacheKeyProperties properties;
     private final PublishShProcess publishShProcess;
+    private final CommonCacheService commonCache;
 
     @Override
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
@@ -78,8 +80,8 @@ public class ProductServiceImpl implements ProductService {
         CompletableFuture.runAsync(()->{
             // 缓存商品信息
             cache.saveShProduct(product,product.getProductSn().getSn());
-            List<ProductStatic> productStatics = publishShProcess.getProductStatics(product.getId());
             // 缓存商品静态信息
+            List<ProductStatic> productStatics = publishShProcess.getProductStatics(product.getId());
             cache.saveProductStatic(productStatics,product.getProductSn().getSn());
         });
         return product.getProductSn().getSn();
@@ -88,7 +90,15 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public List<ConditionSHVO> getShConditions() {
-        return repository.getShConditions();
+        List<ConditionSHVO> shConditions = cache.getShConditions();
+        if (shConditions == null){
+            // 未命中
+            shConditions = repository.getShConditions();
+            List<ConditionSHVO> finalShConditions = shConditions;
+            //异步缓存
+            CompletableFuture.runAsync(() -> cache.saveConditionList(finalShConditions));
+        }
+        return shConditions;
     }
 
     @Override
@@ -114,37 +124,20 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public ProductDetailVO getShProductDetail(String productSn) {
-        List<Object> shProductDetail = cache.getShProductDetail(productSn);
-        if (shProductDetail != null){
-            Product product = JackSonUtils.convert(shProductDetail.get(0), Product.class);
-            String userSn = null;
-            List<Object> sellerInfo = null;
-            List<ProductStatic> productStatics = null;
-            if (shProductDetail.size() == 2){
-                userSn = (String) shProductDetail.get(1);
-            }else if (shProductDetail.size() == 3){
-                sellerInfo = (List<Object>) shProductDetail.get(2);
-            }else if(shProductDetail.size() == 4){
-                productStatics = (List<ProductStatic>) shProductDetail.get(2);
+        Product product = cache.getDetailProductInfo(productSn);
+        List<ProductStatic> productStatics = cache.getProductStatics(productSn);
+        if (product == null){
+            // 商品详细主体信息未命中 直接查库
+            ProductDetailVO productDetailVO = handleProductNotInCache(productSn, productStatics);
+            if (productDetailVO == null){
+                throw new BusinessException(BusinessMessage.GET_PRODUCT_DETAIL_ERROR);
             }
-
-            // 处理逻辑
-
-            return ToProductDetailVO.COVERT.toProductDetailVO(product, sellerInfo, productStatics, userSn);
+            return productDetailVO;
         }
 
-        ProductDetailVO vo = repository.getShProductDetail(productSn);
-
-        //异步缓存 缺失信息
-/*        CompletableFuture.runAsync(() -> {
-            // 缓存商品信息
-            cache.saveShProduct(vo.getProduct(),productSn);
-            // 缓存商品静态信息
-            cache.saveProductStatic(vo.getProductStatics(),productSn);
-            // 缓存卖家信息
-            cache.saveInfo(userSn,vo.getSellerInfo());
-        });*/
-        return vo;
+        // 待完善
+        ProductDetailVO productDetailVO = handlerProductInCache(product, productStatics);
+        return productDetailVO;
     }
 
     @Override
@@ -219,5 +212,70 @@ public class ProductServiceImpl implements ProductService {
                 shProductParam.setLastCreatedAt(LocalDateTime.MIN);
             }
         }
+    }
+
+    private ProductDetailVO handleProductNotInCache(String productSn, List<ProductStatic> cachedStatics) {
+        try {
+            // 判断是否需要查询静态信息
+            boolean needStatic = (cachedStatics == null);
+            ProductDetailVO vo = repository.getShProductDetail(productSn, needStatic);
+
+            if (vo == null) {
+                // 数据库也不存在，缓存空值防止穿透
+                commonCache.saveNullValue(properties.getShProductKey() + productSn);
+                return null;
+            }
+            if (needStatic){
+                if (vo.getProductImages() == null){
+                    String shProductImageKey = properties.getProductStaticKey() + productSn;
+                    commonCache.saveNullValue(shProductImageKey);
+                }
+            }
+
+            if (!needStatic) {
+                List<ProductImage> imageList = cachedStatics.stream()
+                        .map(s -> {
+                            ProductImage image = new ProductImage();
+                            image.setSkuId(s.getSkuId());
+                            image.setImageUrl(s.getImageUrl());
+                            image.setType(s.getImageType().getCode());
+                            return image;
+                        }).toList();
+                vo.setProductImages(imageList);
+            }
+
+            // 异步回填所有缓存
+            /*asyncFillAllCaches(vo, productSn);*/
+            return vo;
+
+        } catch (BusinessException e) {
+            commonCache.saveNullValue(properties.getShProductKey() + productSn);
+            throw new BusinessException(e.getMessage());
+        }
+    }
+
+    private ProductDetailVO handlerProductInCache(Product  product,List<ProductStatic> productStatics){
+        //获取卖家信息
+        List<Object> sellerInfo = null;
+        String userSn = cache.getUserSn(product.getSellerId());
+        if (userSn != null){
+            sellerInfo = cache.getSellerInfo(userSn);
+        }
+
+        // 缓存全部命中 直接组装返回vo
+        if (productStatics != null && sellerInfo != null){
+            return ToProductDetailVO.COVERT.toProductDetailVO(product, sellerInfo, productStatics, userSn);
+        }
+
+        //异步缓存 缺失信息
+/*        CompletableFuture.runAsync(() -> {
+            // 缓存商品信息
+            cache.saveShProduct(vo.getProduct(),productSn);
+            // 缓存商品静态信息
+            cache.saveProductStatic(vo.getProductStatics(),productSn);
+            // 缓存卖家信息
+            cache.saveInfo(userSn,vo.getSellerInfo());
+        });*/
+        return null;
     }
 }

@@ -14,6 +14,7 @@ import com.zhuxi.common.shared.utils.JwtUtils;
 import com.zhuxi.user.module.application.service.process.user.ChangePasswordProcess;
 import com.zhuxi.user.module.application.service.process.user.LoginProcess;
 import com.zhuxi.user.module.application.service.process.user.RegisterProcess;
+import com.zhuxi.user.module.application.service.process.user.UpdateInfoProcess;
 import com.zhuxi.user.module.domain.user.enums.UserStatus;
 import com.zhuxi.user.module.domain.user.model.User;
 import com.zhuxi.user.module.domain.user.repository.UserRepository;
@@ -50,6 +51,7 @@ public class UserServiceImpl implements UserService {
     private final RegisterProcess registerProcess;
     private final LoginProcess loginProcess;
     private final ChangePasswordProcess changePasswordProcess;
+    private final UpdateInfoProcess updateInfoProcess;
 
     @Override
     public User register(UserRegisterDTO register) {
@@ -114,38 +116,23 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional(rollbackFor = BusinessException.class)
     public void updateInfo(UserUpdateInfoDTO update, String userSn) {
 
-        //从 缓存中获取用户信息
-        List<String> keys = List.of("id", "userStatus", "role");
-        User user = cache.getUserInfo(userSn,keys);
+        //从缓存中获取用户信息
+        User user = updateInfoProcess.getUserInfo(userSn, cache,commonCache,properties);
 
-        // 验证用户状态
-        if (user == null) {
-            //未命中
-            user = repository.getUserIdStatusBySn(userSn);
-            User finalUser = user;
-            // 异步缓存未命中信息
-            CompletableFuture.runAsync(()->
-                    cache.saveUserPartInfo(userSn, finalUser, keys)
-            );
-        }
+        // 检查用户状态
         if (user.getUserStatus() == UserStatus.LOCKED) {
             throw new BusinessException(BusinessMessage.USER_IS_LOCK);
         }
 
-        // 更新用户信息
-        user.updateInfo(update);
-
-        // 写入数据库
-        repository.save(user);
+        //写入
+        updateInfoProcess.saveUpdate(user, update);
 
         // 清除缓存
         cache.deleteUserInfo(userSn);
 
         // 事务提交后异步更新用户信息
-        User finalUser1 = user;
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
@@ -154,7 +141,7 @@ public class UserServiceImpl implements UserService {
                     try {
                         int retryCount = 0;
                         while (retryCount < 2) {
-                            allUserInfo = repository.getAllUserInfo(finalUser1.getId());
+                            allUserInfo = repository.getAllUserInfo(user.getId());
                             if (allUserInfo != null) {
                                 break;
                             }

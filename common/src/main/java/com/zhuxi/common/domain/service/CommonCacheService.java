@@ -21,4 +21,10 @@ public interface CommonCacheService {
      * @param type   0:用户id-sn映射 1:缓存缺失的用户id 3: 0 and 1
      */
     void saveUserIdOrSn(String userSn,Long userId,Integer type);
+
+    /**
+     * 缓存空值 避免缓存穿透
+     * @param key 缓存key
+     */
+    void saveNullValue(String key);
 }

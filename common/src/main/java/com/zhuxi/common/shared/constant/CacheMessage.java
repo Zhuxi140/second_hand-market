@@ -8,4 +8,5 @@ public class CacheMessage {
     public static final String LUA_EXECUTE_ERROR = "LUA执行错误";
     public static final String ARGS_IS_NULL_OR_EMPTY = "传入参数存在为空或null";
     public static final String KEYS_AND_VALUES_SIZE_NOT_EQUAL = "keys和values长度不一致";
+    public static final String NOT_EXIST_DATA = "您访问的内容不存在";
 }

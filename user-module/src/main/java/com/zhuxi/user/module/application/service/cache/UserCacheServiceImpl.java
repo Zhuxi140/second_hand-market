@@ -3,6 +3,7 @@ package com.zhuxi.user.module.application.service.cache;
 import com.zhuxi.common.infrastructure.properties.CacheKeyProperties;
 import com.zhuxi.common.shared.constant.CacheMessage;
 import com.zhuxi.common.shared.enums.Role;
+import com.zhuxi.common.shared.exception.BusinessException;
 import com.zhuxi.common.shared.exception.CacheException;
 import com.zhuxi.common.shared.utils.RedisUtils;
 import com.zhuxi.user.module.domain.user.model.User;
@@ -23,14 +24,12 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class UserCacheServiceImpl implements UserCacheService {
 
-    private final CacheKeyProperties commonKeys;
     private final RedisUtils redisUtils;
     private final CacheKeyProperties properties;
     private final DefaultRedisScript<Long> hashSetWithExpireScript;
     private final DefaultRedisScript<List<Object>> getUserInfoScript;
 
-    public UserCacheServiceImpl(CacheKeyProperties commonKeys, RedisUtils redisUtils, CacheKeyProperties properties) {
-        this.commonKeys = commonKeys;
+    public UserCacheServiceImpl(RedisUtils redisUtils, CacheKeyProperties properties) {
         this.redisUtils = redisUtils;
         this.properties = properties;
         this.getUserInfoScript = new DefaultRedisScript<>();
@@ -49,10 +48,10 @@ public class UserCacheServiceImpl implements UserCacheService {
     public void saveBlockList(String token, Role role,long expire) {
         try {
             if (Role.user.equals(role) || Role.Merchant.equals(role)) {
-                redisUtils.ssSetValue(commonKeys.getBlockUserTokenKey() + token, "1",
+                redisUtils.ssSetValue(properties.getBlockUserTokenKey() + token, "1",
                         expire, TimeUnit.MILLISECONDS);
             } else {
-                redisUtils.ssSetValue(commonKeys.getBlockAdminTokenKey() + token, "1",
+                redisUtils.ssSetValue(properties.getBlockAdminTokenKey() + token, "1",
                         expire, TimeUnit.MILLISECONDS);
             }
         }catch (Exception e){
@@ -178,7 +177,9 @@ public class UserCacheServiceImpl implements UserCacheService {
 
     @Override
     public Object getOneInfo(String userSn, String key) {
-        return redisUtils.hashGet(properties.getUserInfoKey() + userSn, key);
+        String hashKey = properties.getUserInfoKey() + userSn;
+        checkNullValue(hashKey);
+        return redisUtils.hashGet(hashKey, key);
     }
 
     @Override
@@ -199,7 +200,7 @@ public class UserCacheServiceImpl implements UserCacheService {
             keys = List.of("id", "userSn", "username", "nickname", "phone", "email", "avatar", "gender", "role", "userStatus", "createdAt");
         }
         String key  = properties.getUserInfoKey() + userSn;
-
+        checkNullValue( key);
         Object o = redisUtils.executeLuaScript(
                 getUserInfoScript,
                 List.of(key),
@@ -232,5 +233,17 @@ public class UserCacheServiceImpl implements UserCacheService {
             map.put(keys.get(i),values.get(i));
         }
         return map;
+    }
+
+    // 检查缓存中是否存在NULL_VALUE标记 用于拦截重复无效不存在的sn的请求
+    private void checkNullValue(String key){
+        String result = redisUtils.ssGetValue(key);
+        if (result == null){
+            return;
+        }
+
+        if (result.equals(properties.getNULL_VALUE())) {
+            throw new BusinessException(CacheMessage.NOT_EXIST_DATA);
+        }
     }
 }

@@ -28,6 +28,7 @@ cache:
     address-info-key: "user:address:"
     #商品
     category-key: "product:category"
+    condition-key: "product:condition"
     sh-product-key: "product:shProduct:"
     sh-product-expire: 1800 #秒
     me-product-key: "product:user:shProduct:"

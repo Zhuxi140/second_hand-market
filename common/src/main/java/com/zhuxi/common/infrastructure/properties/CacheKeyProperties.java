@@ -18,6 +18,7 @@ public class CacheKeyProperties {
     private final String blockUserTokenKey;
     private final String blockAdminTokenKey;
     private final int refreshExpire;
+    private final String NULL_VALUE = "NULL_VALUE";
 
     // 用户相关key
     private final String useridMapSnKey;
@@ -30,6 +31,7 @@ public class CacheKeyProperties {
 
     // 商品相关key
     private final String categoryKey;
+    private final String conditionKey;
     private final String shProductKey;
     private final Long shProductExpire;
     private final String meProductKey;
@@ -37,7 +39,7 @@ public class CacheKeyProperties {
 
 
     @ConstructorBinding
-    public CacheKeyProperties(String userPermissionKey, String adminPermissionKey, String blockUserTokenKey, String blockAdminTokenKey, int refreshExpire, String useridMapSnKey, String defaultUserAvatar, String userInfoKey, Long defaultInfoExpire, String addressInfoKey, String categoryKey, String shProductKey, Long shProductExpire, String meProductKey, String productStaticKey) {
+    public CacheKeyProperties(String userPermissionKey, String adminPermissionKey, String blockUserTokenKey, String blockAdminTokenKey, int refreshExpire, String useridMapSnKey, String defaultUserAvatar, String userInfoKey, Long defaultInfoExpire, String addressInfoKey, String categoryKey, String conditionKey, String shProductKey, Long shProductExpire, String meProductKey, String productStaticKey) {
         this.userPermissionKey = userPermissionKey;
         this.adminPermissionKey = adminPermissionKey;
         this.blockUserTokenKey = blockUserTokenKey;
@@ -49,6 +51,7 @@ public class CacheKeyProperties {
         this.defaultInfoExpire = defaultInfoExpire;
         this.addressInfoKey = addressInfoKey;
         this.categoryKey = categoryKey;
+        this.conditionKey = conditionKey;
         this.shProductKey = shProductKey;
         this.shProductExpire = shProductExpire;
         this.meProductKey = meProductKey;

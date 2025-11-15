@@ -103,11 +103,8 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public User getUserIdStatusBySn(String userSn) {
-        User user = userMapper.getUserIdStatusBySn(userSn);
-        if (user == null){
-            throw new BusinessException(BusinessMessage.USER_DATA_ERROR);
-        }
-        return user;
+
+        return userMapper.getUserIdStatusBySn(userSn);
     }
 
     @Override

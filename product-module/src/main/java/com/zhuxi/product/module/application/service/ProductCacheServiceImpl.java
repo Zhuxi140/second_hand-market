@@ -2,12 +2,15 @@ package com.zhuxi.product.module.application.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.zhuxi.common.infrastructure.properties.CacheKeyProperties;
+import com.zhuxi.common.shared.constant.CacheMessage;
+import com.zhuxi.common.shared.exception.CacheException;
 import com.zhuxi.common.shared.utils.JackSonUtils;
 import com.zhuxi.common.shared.utils.RedisUtils;
 import com.zhuxi.product.module.domain.model.Product;
 import com.zhuxi.product.module.domain.model.ProductStatic;
 import com.zhuxi.product.module.domain.service.ProductCacheService;
 import com.zhuxi.product.module.interfaces.vo.CategoryVO;
+import com.zhuxi.product.module.interfaces.vo.ConditionSHVO;
 import com.zhuxi.product.module.interfaces.vo.ProductDetailVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
@@ -58,11 +61,31 @@ public class ProductCacheServiceImpl implements ProductCacheService {
 
     @Override
     public List<CategoryVO> getCategoryList() {
-        String json = redisUtils.ssGetValue(properties.getCategoryKey());
+        String categoryKey = properties.getCategoryKey();
+        String json = redisUtils.ssGetValue(categoryKey);
         if (json == null){
             return null;
         }
         return JackSonUtils.readValue(json, new TypeReference<List<CategoryVO>>() {});
+    }
+
+    @Override
+    public void saveConditionList(List<ConditionSHVO> list) {
+        if (list == null){
+            log.warn("condition-list-is-null,商品成色缓存失败");
+        }
+        String json = JackSonUtils.toJson(list);
+        redisUtils.ssSetValue(properties.getConditionKey(), json, 7, TimeUnit.DAYS);
+    }
+
+    @Override
+    public List<ConditionSHVO> getShConditions() {
+        String conditionKey = properties.getConditionKey();
+        String json = redisUtils.ssGetValue(conditionKey);
+        if (json == null){
+            return null;
+        }
+        return JackSonUtils.readValue(json, new TypeReference<List<ConditionSHVO>>() {});
     }
 
     @Override
@@ -134,12 +157,14 @@ public class ProductCacheServiceImpl implements ProductCacheService {
     }
 
     @Override
-    public List<Object> getShProductDetail(String productSn) {
-        if (productSn == null){
-            throw new IllegalArgumentException("productSn-is-null");
+    public Product getDetailProductInfo(String productSn){
+        if (productSn == null || productSn.isBlank()){
+            throw new CacheException(CacheMessage.ARGS_IS_NULL_OR_EMPTY);
         }
+        String key = properties.getShProductKey() + productSn;
+        checkNullValue(key);
         List<String> values = List.of("productSn","sellerId", "title", "description", "categoryId","categoryName", "price", "conditionId","conditionName","status", "location", "viewCount", "hostScore");
-        List<String> hashKey = List.of(properties.getShProductKey() + productSn);
+        List<String> hashKey = List.of(key);
         Object obj = redisUtils.executeLuaScript(getScript, hashKey, values);
         if (obj == null){
             return null;
@@ -155,43 +180,62 @@ public class ProductCacheServiceImpl implements ProductCacheService {
         if (productInfo == null || productInfo.isEmpty()){
             return null;
         }
-        String sellerId = productInfo.get(1).toString();
+        return JackSonUtils.convert(productInfo, Product.class);
+    }
 
+    @Override
+    public String getUserSn(Long userId){
+        if (userId == null){
+            throw new CacheException(CacheMessage.ARGS_IS_NULL_OR_EMPTY);
+        }
+        String useridMapSnKey = properties.getUseridMapSnKey();
+        checkNullValue(useridMapSnKey);
         // 获取id-sn映射
-        Object seller = redisUtils.hashGet(properties.getShProductKey() + productSn, sellerId);
+        Object seller = redisUtils.hashGet(useridMapSnKey, userId.toString());
         if (seller == null){
-            ArrayList<Object> list = new ArrayList<>();
-            list.add(productInfo);
-            return list;
+            return null;
         }
+        return seller.toString();
+    }
 
-        //获取用户信息
-        String userSn = seller.toString();
-        List<Object> sellerInfo = redisUtils.hashGetAll(properties.getUserInfoKey() + userSn, List.of("nickname", "avatar"));
-        if (sellerInfo == null){
-            ArrayList<Object> list = new ArrayList<>();
-            list.add(productInfo);
-            list.add(userSn);
-            return list;
+    @Override
+    public List<Object> getSellerInfo(String userSn){
+        if (userSn == null || userSn.isBlank()){
+            throw new CacheException(CacheMessage.ARGS_IS_NULL_OR_EMPTY);
         }
+        String key = properties.getUserInfoKey() + userSn;
+        checkNullValue(key);
+        List<Object> sellerInfo = redisUtils.hashGetAll(key, List.of("nickname", "avatar"));
+        if (sellerInfo == null || sellerInfo.isEmpty()){
+            return null;
+        }
+        return sellerInfo;
+    }
 
+    @Override
+    public List<ProductStatic> getProductStatics(String productSn){
+        if (productSn == null || productSn.isBlank()){
+            throw new CacheException(CacheMessage.ARGS_IS_NULL_OR_EMPTY);
+        }
         String staticKey = properties.getProductStaticKey() + productSn;
+        checkNullValue(staticKey);
         String json = redisUtils.ssGetValue(staticKey);
         if (json == null){
-            ArrayList<Object> list = new ArrayList<>();
-            list.add(productInfo);
-            list.add(userSn);
-            list.add(sellerInfo);
-            return list;
+            return null;
         }
-        List<ProductStatic> productStatics = JackSonUtils.readValue(json, new TypeReference<List<ProductStatic>>() {});
+        return JackSonUtils.readValue(json, new TypeReference<List<ProductStatic>>() {});
+    }
 
-        return List.of(
-                productInfo,
-                userSn,
-                sellerInfo,
-                productStatics
-        );
+    // 检查缓存中是否存在NULL_VALUE标记 用于拦截重复无效不存在的sn的请求
+    private void checkNullValue(String key){
+        String result = redisUtils.ssGetValue(key);
+        if (result == null){
+            return;
+        }
+
+        if (result.equals(properties.getNULL_VALUE())) {
+            throw new CacheException(CacheMessage.NOT_EXIST_DATA);
+        }
     }
 
 }

@@ -64,9 +64,10 @@ public interface ProductRepository {
     /**
      * 获取商品详情
      * @param productId 商品id
+     * @param isGetStatic 是否获取静态信息
      * @return 商品详情
      */
-    ProductDetailVO getShProductDetail(String productId);
+    ProductDetailVO getShProductDetail(String productId,boolean isGetStatic);
 
     /**
      * 删除商品
