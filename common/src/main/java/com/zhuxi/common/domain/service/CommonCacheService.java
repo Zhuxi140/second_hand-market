@@ -1,5 +1,8 @@
 package com.zhuxi.common.domain.service;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * @author zhuxi
  */
@@ -27,4 +30,18 @@ public interface CommonCacheService {
      * @param key 缓存key
      */
     void saveNullValue(String key);
+
+
+    /**
+     * 删除缓存
+     * @param key 缓存key
+     */
+    void delKey(String key);
+
+    /**
+     * 更新缺失的缓存(hash类型)
+     * @param map 缓存数据 <String(字段),Object(值)>
+     * @param hashKey 键名key
+     */
+    void hashFlushValue(Map<String,Object> map, String hashKey);
 }

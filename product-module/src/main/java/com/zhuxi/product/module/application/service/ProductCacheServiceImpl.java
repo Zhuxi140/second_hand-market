@@ -123,7 +123,7 @@ public class ProductCacheServiceImpl implements ProductCacheService {
         values.add("status");
         values.add(product.getStatus().getCode());
         values.add("location");
-        values.add(product.getLocation().getLocation());
+        values.add(product.getLocation().getLocationCode());
         values.add("viewCount");
         values.add(product.getViewCount());
         values.add("hostScore");
@@ -144,7 +144,7 @@ public class ProductCacheServiceImpl implements ProductCacheService {
     @Override
     public void saveProductStatic(List<ProductStatic> pStatics, String productSn) {
         if (pStatics == null){
-            log.warn("product-static-list-is-null,商品静态资源缓存失败 productSn:{}", productSn);
+            log.warn("productStatic-list-is-null,商品静态资源缓存失败 productSn:{}", productSn);
             return;
         }
         String json = JackSonUtils.toJson(pStatics);

@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.security.Key;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -60,6 +61,19 @@ public class CommonCacheServiceImpl implements CommonCacheService {
     @Override
     public void saveNullValue(String key) {
         redisUtils.ssSetValue(key, properties.getNULL_VALUE(), 2, TimeUnit.MINUTES);
+    }
+
+    @Override
+    public void delKey(String key) {
+        Boolean b = redisUtils.deleteKey(key);
+        if (!b){
+            throw new CacheException(CacheMessage.DEL_KEY_ERROR);
+        }
+    }
+
+    @Override
+    public void hashFlushValue(Map<String, Object> map, String hashKey) {
+        redisUtils.hashSet(hashKey, map);
     }
 
 }

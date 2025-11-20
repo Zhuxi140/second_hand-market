@@ -33,7 +33,7 @@ public class PublishShProcess {
      * @return 业务需要的冗余字段
      */
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-    public List<String> getOtherNames(Long conditionId, Long categoryId) {
+    public List<String> getOtherNames(Integer conditionId, Long categoryId) {
         String categoryName = repository.getCategoryNameById(categoryId);
         String conditionName = repository.gerConditionNameById(conditionId);
 

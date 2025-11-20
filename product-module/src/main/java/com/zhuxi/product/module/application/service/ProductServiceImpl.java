@@ -64,7 +64,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public String publishSh(PublishSHDTO sh, String userSn) {
         // 获取业务所需冗余字段
-        List<String> otherNames = publishShProcess.getOtherNames(sh.getCategoryId(), sh.getCategoryId());
+        List<String> otherNames = publishShProcess.getOtherNames(sh.getConditionId(), sh.getCategoryId());
         // 发布商品
         Product product = publishShProcess.publish(sh, otherNames);
 
@@ -82,8 +82,13 @@ public class ProductServiceImpl implements ProductService {
             cache.saveShProduct(product,product.getProductSn().getSn());
             // 缓存商品静态信息
             List<ProductStatic> productStatics = publishShProcess.getProductStatics(product.getId());
-            cache.saveProductStatic(productStatics,product.getProductSn().getSn());
+            if (productStatics != null){
+                cache.saveProductStatic(productStatics,product.getProductSn().getSn());
+            }else{
+                log.warn("publishShProduct-error:查库获取商品静态信息为null. productId:{}",product.getId());
+            }
         });
+
         return product.getProductSn().getSn();
     }
 

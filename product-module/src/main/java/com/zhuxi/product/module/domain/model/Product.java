@@ -108,4 +108,14 @@ public class Product {
             this.status = ProductStatus.SALES;
         }
     }
+
+    /**
+     * 添加商品名称
+     * @param categoryName 商品分类名称
+     * @param conditionName 商品成色名称
+     */
+    public void addNames(String categoryName,String conditionName){
+        this.categoryName = categoryName;
+        this.conditionName = conditionName;
+    }
 }

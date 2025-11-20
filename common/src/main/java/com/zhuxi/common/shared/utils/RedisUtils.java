@@ -75,7 +75,7 @@ public class RedisUtils {
     }
 
     /**
-     * 获取HashRedisTemplate(String,String,object)中的值
+     * 缓存hash类型的数据
      * @param key 键
      * @param value 值
      */

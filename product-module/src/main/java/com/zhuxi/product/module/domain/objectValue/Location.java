@@ -9,7 +9,7 @@ import java.util.Objects;
  */
 @Getter
 public class Location {
-    private final String location;
+    private final String locationCode;
 
     public Location(String location) {
         if (location == null || location.isBlank()){
@@ -18,7 +18,7 @@ public class Location {
         if (location.length() > 255){
             throw new IllegalArgumentException("objectValue-location is too long");
         }
-        this.location = location;
+        this.locationCode = location;
     }
 
     @Override
@@ -32,11 +32,11 @@ public class Location {
         }
         Location that = (Location) obj;
 
-        return Objects.equals(location, that.location);
+        return Objects.equals(locationCode, that.locationCode);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(location);
+        return Objects.hash(locationCode);
     }
 }

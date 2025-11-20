@@ -88,7 +88,7 @@ public interface ProductRepository {
      * @param conditionId 成色id
      * @return 成色名称
      */
-    String gerConditionNameById(Long conditionId);
+    String gerConditionNameById(Integer conditionId);
 
     /**
      * 根据分类id获取分类名称
@@ -111,5 +111,20 @@ public interface ProductRepository {
      * @return 卖家信息
      */
     List<Object> getSellerInfo(String userSn);
+
+   /**
+     * 获取商品信息(用于缓存)
+     * @param productId 商品id
+     * @return 商品信息
+     */
+    Product getProductForCache(Long productId);
+
+    /**
+     * 根据用户id获取用户编号
+     * @param userId 用户id
+     * @return 用户编号
+     */
+    String getUserSn(Long userId);
+
 
 }

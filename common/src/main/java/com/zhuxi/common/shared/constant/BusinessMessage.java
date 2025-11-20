@@ -7,6 +7,7 @@ public class BusinessMessage {
 
     //--------------通用类-------------------------
     public static final String TIMEOUT = "操作超时,请稍后重试";
+    public static final String DATA_EXCEPTION = "数据异常，请稍后刷新重试或联系管理员";
 
     // -----------用户类-------------------------
     public static final String USER_NOT_EXIST = "用户不存在";

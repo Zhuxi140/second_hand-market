@@ -63,7 +63,7 @@ public interface ProductMapper {
     List<MeShProductVO> getMeShProductList(Long userId);
 
     @Select("SELECT name FROM product_condition WHERE id = #{conditionId}")
-    String gerConditionNameById(Long conditionId);
+    String gerConditionNameById(Integer conditionId);
 
     @Select("SELECT name FROM product_sort WHERE id = #{categoryId}")
     String getCategoryNameById(Long categoryId);
@@ -76,5 +76,16 @@ public interface ProductMapper {
     ORDER BY ps.sort_order ASC
     """)
     List<ProductStatic> getProductStatics(Long productId);
+
+    @Select("""
+    SELECT id,product_sn,seller_id,shop_id,title,description,
+           category_id,price,condition_id,status,location,view_count,is_draft,created_at as create_time
+    FROM product
+    WHERE id = #{productId}
+    """)
+    Product getProductForCache(Long productId);
+
+    @Select("SELECT userSn FROM user WHERE id = #{userId} ")
+    String getUserSn(Long userId);
 
 }

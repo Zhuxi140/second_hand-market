@@ -100,17 +100,22 @@ public class ProductRepositoryImpl implements ProductRepository {
     public ProductDetailVO getShProductDetail(String productSn,boolean isGetStatic) {
         Long productId = productMapper.getProductIdBySn(productSn);
         if (productId == null){
-            log.error("getShProductDetail:getShProductDetail-case:{},productSn:{}", CommonMessage.DATABASE_SELECT_EXCEPTION,productSn);
+            log.error("getShProductDetail:getProductIdBySn-case:{},productSn:{}", CommonMessage.DATABASE_SELECT_EXCEPTION,productSn);
             throw new BusinessException(BusinessMessage.PRODUCT_ID_IS_NULL);
         }
         ProductDetailVO productDetail = productMapper.getShProductDetail(productId);
         if (productDetail == null){
+            log.error("getShProductDetail:getShProductDetail-case:{},productSn:{}", CommonMessage.DATABASE_SELECT_EXCEPTION,productSn);
             return null;
         }
         if (isGetStatic){
             List<ProductImage> productImages = productMapper.getProductImages(productId);
+            if (productImages == null){
+                log.error("getShProductDetail:getProductImages-case:{},productSn:{}", CommonMessage.DATABASE_SELECT_EXCEPTION,productSn);
+            }
             productDetail.setProductImages(productImages);
         }
+        productDetail.setId(productId);
         return productDetail;
     }
 
@@ -134,7 +139,7 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     @Override
-    public String gerConditionNameById(Long conditionId) {
+    public String gerConditionNameById(Integer conditionId) {
         return productMapper.gerConditionNameById(conditionId);
     }
 
@@ -145,11 +150,25 @@ public class ProductRepositoryImpl implements ProductRepository {
 
     @Override
     public List<ProductStatic> getProductStatics(Long productId) {
-        return productMapper.getProductStatics(productId);
+        List<ProductStatic> productStatics = productMapper.getProductStatics(productId);
+        if (productStatics == null){
+            log.error("getProductStatics-case:{}.productId:{}", CommonMessage.DATABASE_SELECT_EXCEPTION,productId);
+        }
+        return productStatics;
     }
 
     @Override
     public List<Object> getSellerInfo(String userSn) {
         return productMapper.getSellerInfo(userSn);
+    }
+
+    @Override
+    public Product getProductForCache(Long productId) {
+        return productMapper.getProductForCache(productId);
+    }
+
+    @Override
+    public String getUserSn(Long userId) {
+        return productMapper.getUserSn(userId);
     }
 }

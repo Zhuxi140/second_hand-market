@@ -1,5 +1,6 @@
 package com.zhuxi.product.module.interfaces.vo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.zhuxi.product.module.domain.enums.ProductStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -17,6 +18,8 @@ import java.util.List;
 @NoArgsConstructor
 @Schema(description = "商品详情VO")
 public class ProductDetailVO {
+    @JsonIgnore
+    private Long id;
     @Schema(description = "商品编号")
     private String productSn;
     @Schema(description = "卖家编号")
