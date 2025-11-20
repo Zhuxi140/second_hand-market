@@ -22,6 +22,9 @@ public interface ProductMapper {
     @Select("SELECT id FROM user WHERE userSn = #{userSn} ")
     Long getUserIdBySn(String userSn);
 
+    @Select("SELECT nickname,avatar FROM user WHERE userSn = #{userSn}")
+    List<Object> getSellerInfo(String userSn);
+
     @Select("SELECT id,name,parent_id,icon_url FROM product_sort LIMIT #{limit} OFFSET #{offset}")
     List<CategoryVO> getCategoryList(int limit,int offset);
 

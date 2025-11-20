@@ -5,7 +5,7 @@ import com.zhuxi.common.infrastructure.properties.CacheKeyProperties;
 import com.zhuxi.common.shared.constant.BusinessMessage;
 import com.zhuxi.common.shared.exception.BusinessException;
 import com.zhuxi.common.shared.exception.PersistenceException;
-import com.zhuxi.product.module.application.assembler.ToProductDetailVO;
+import com.zhuxi.product.module.application.service.process.GetProductDetailProcess;
 import com.zhuxi.product.module.application.service.process.PublishShProcess;
 import com.zhuxi.product.module.domain.model.Product;
 import com.zhuxi.product.module.domain.model.ProductStatic;
@@ -21,7 +21,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +39,7 @@ public class ProductServiceImpl implements ProductService {
     private final CacheKeyProperties properties;
     private final PublishShProcess publishShProcess;
     private final CommonCacheService commonCache;
+    private final GetProductDetailProcess getProductDetailProcess;
 
     @Override
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
@@ -128,16 +128,13 @@ public class ProductServiceImpl implements ProductService {
         List<ProductStatic> productStatics = cache.getProductStatics(productSn);
         if (product == null){
             // 商品详细主体信息未命中 直接查库
-            ProductDetailVO productDetailVO = handleProductNotInCache(productSn, productStatics);
+            ProductDetailVO productDetailVO = getProductDetailProcess.handleProductNotInCache(productSn, productStatics);
             if (productDetailVO == null){
                 throw new BusinessException(BusinessMessage.GET_PRODUCT_DETAIL_ERROR);
             }
             return productDetailVO;
         }
-
-        // 待完善
-        ProductDetailVO productDetailVO = handlerProductInCache(product, productStatics);
-        return productDetailVO;
+        return getProductDetailProcess.handlerProductInCache(product, productStatics);
     }
 
     @Override
@@ -212,70 +209,5 @@ public class ProductServiceImpl implements ProductService {
                 shProductParam.setLastCreatedAt(LocalDateTime.MIN);
             }
         }
-    }
-
-    private ProductDetailVO handleProductNotInCache(String productSn, List<ProductStatic> cachedStatics) {
-        try {
-            // 判断是否需要查询静态信息
-            boolean needStatic = (cachedStatics == null);
-            ProductDetailVO vo = repository.getShProductDetail(productSn, needStatic);
-
-            if (vo == null) {
-                // 数据库也不存在，缓存空值防止穿透
-                commonCache.saveNullValue(properties.getShProductKey() + productSn);
-                return null;
-            }
-            if (needStatic){
-                if (vo.getProductImages() == null){
-                    String shProductImageKey = properties.getProductStaticKey() + productSn;
-                    commonCache.saveNullValue(shProductImageKey);
-                }
-            }
-
-            if (!needStatic) {
-                List<ProductImage> imageList = cachedStatics.stream()
-                        .map(s -> {
-                            ProductImage image = new ProductImage();
-                            image.setSkuId(s.getSkuId());
-                            image.setImageUrl(s.getImageUrl());
-                            image.setType(s.getImageType().getCode());
-                            return image;
-                        }).toList();
-                vo.setProductImages(imageList);
-            }
-
-            // 异步回填所有缓存
-            /*asyncFillAllCaches(vo, productSn);*/
-            return vo;
-
-        } catch (BusinessException e) {
-            commonCache.saveNullValue(properties.getShProductKey() + productSn);
-            throw new BusinessException(e.getMessage());
-        }
-    }
-
-    private ProductDetailVO handlerProductInCache(Product  product,List<ProductStatic> productStatics){
-        //获取卖家信息
-        List<Object> sellerInfo = null;
-        String userSn = cache.getUserSn(product.getSellerId());
-        if (userSn != null){
-            sellerInfo = cache.getSellerInfo(userSn);
-        }
-
-        // 缓存全部命中 直接组装返回vo
-        if (productStatics != null && sellerInfo != null){
-            return ToProductDetailVO.COVERT.toProductDetailVO(product, sellerInfo, productStatics, userSn);
-        }
-
-        //异步缓存 缺失信息
-/*        CompletableFuture.runAsync(() -> {
-            // 缓存商品信息
-            cache.saveShProduct(vo.getProduct(),productSn);
-            // 缓存商品静态信息
-            cache.saveProductStatic(vo.getProductStatics(),productSn);
-            // 缓存卖家信息
-            cache.saveInfo(userSn,vo.getSellerInfo());
-        });*/
-        return null;
     }
 }

@@ -147,4 +147,9 @@ public class ProductRepositoryImpl implements ProductRepository {
     public List<ProductStatic> getProductStatics(Long productId) {
         return productMapper.getProductStatics(productId);
     }
+
+    @Override
+    public List<Object> getSellerInfo(String userSn) {
+        return productMapper.getSellerInfo(userSn);
+    }
 }

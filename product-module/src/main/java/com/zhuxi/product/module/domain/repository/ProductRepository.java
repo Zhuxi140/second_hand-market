@@ -105,4 +105,11 @@ public interface ProductRepository {
      */
     List<ProductStatic> getProductStatics(Long productId);
 
+    /**
+     * 获取卖家信息(昵称、头像)
+     * @param userSn 用户编号
+     * @return 卖家信息
+     */
+    List<Object> getSellerInfo(String userSn);
+
 }

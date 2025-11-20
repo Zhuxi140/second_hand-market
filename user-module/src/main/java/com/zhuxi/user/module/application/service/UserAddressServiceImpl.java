@@ -4,6 +4,7 @@ package com.zhuxi.user.module.application.service;
 import com.zhuxi.common.shared.constant.BusinessMessage;
 import com.zhuxi.common.shared.exception.BusinessException;
 import com.zhuxi.user.module.application.service.process.address.InsertAdsProcess;
+import com.zhuxi.user.module.application.service.process.address.UpdateAddressProcess;
 import com.zhuxi.user.module.domain.address.enums.IsDefault;
 import com.zhuxi.user.module.domain.address.model.UserAddress;
 import com.zhuxi.user.module.domain.address.repository.UserAddressRepository;
@@ -18,11 +19,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.lang.ref.Reference;
+import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author zhuxi
@@ -33,23 +38,28 @@ import java.util.concurrent.ConcurrentMap;
 public class UserAddressServiceImpl implements UserAddressService {
     
     private final UserAddressRepository repository;
-    private final ConcurrentMap<String, WeakReference<Object>> adsLock = new ConcurrentHashMap<>();
     private final InsertAdsProcess insertAdsProcess;
+    private final UpdateAddressProcess updateAddressProcess;
     private final UserAddressCacheService cache;
+    private final ConcurrentMap<String, WeakReference<ReentrantLock>> adsLock = new ConcurrentHashMap<>();
+    private final ReferenceQueue<ReentrantLock> lockReferenceQueue = new ReferenceQueue<>();
 
     // 添加地址
     @Override
     public String insertAddress(AdsRegisterDTO register, String userSn) {
-        // 检查地址数量
-        UserAddress userAddress = insertAdsProcess.checkAddressCount(userSn);
-
-        // 原子性检查是否需处理默认地址并插入地址
-        String addressSn = null;
-        Object lock = getLock(userSn);
-        synchronized(lock){
-            insertAdsProcess.insertAds(userAddress, register);
+        ReentrantLock lock = getLock(userSn);
+        try {
+            if (!lock.tryLock(1, TimeUnit.SECONDS)){
+                throw new BusinessException(BusinessMessage.TIMEOUT);
+            }
+            UserAddress userAddress = insertAdsProcess.checkAddressCount(userSn);
+            return insertAdsProcess.insertAds(userAddress, register);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new BusinessException(BusinessMessage.ADD_ADDRESS_ERROR);
+        } finally {
+            lock.unlock();
         }
-        return addressSn;
     }
 
     // 删除地址
@@ -68,27 +78,17 @@ public class UserAddressServiceImpl implements UserAddressService {
     @Override
     @Transactional(rollbackFor = BusinessException.class)
     public void updateAds(AdsUpdate update, String addressSn, String userSn) {
-        Object lock = getLock(userSn);
-        synchronized (lock) {
-            // 获取地址id 以及 是否为默认地址
-            UserAddress address = repository.getAdIdOrDefaultBySn(addressSn);
-
-            // 是否已为默认地址 或 存在已有的默认地址
-            IsDefault upIsDefault = IsDefault.getByCode(update.getIsDefault());
-            if (upIsDefault == IsDefault.ENABLE && address.getIsDefault() == IsDefault.ENABLE){
-                throw new BusinessException(BusinessMessage.ALREADY_DEFAULT_ADDRESS);
-            }else{
-                Long addressDeId = repository.getDefaultId(address.getUserId());
-                if (addressDeId != null){
-                    repository.cancelDefault(addressDeId);
-                }
-            }
-
-            // 修改
-            address.update(update, upIsDefault);
-
-            // 写入
-            repository.save(address);
+        ReentrantLock lock = getLock(userSn);
+        try{
+        if (!lock.tryLock(1, TimeUnit.SECONDS)) {
+            throw new BusinessException(BusinessMessage.TIMEOUT);
+        }
+        UserAddress address = updateAddressProcess.getAddress(addressSn);
+        updateAddressProcess.updateAddress(update,address);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }finally {
+            lock.unlock();
         }
     }
 
@@ -109,20 +109,32 @@ public class UserAddressServiceImpl implements UserAddressService {
         return info;
     }
 
-    private Object getLock(String userSn){
-        adsLock.entrySet().removeIf(entry->{
-            WeakReference<Object> ref = entry.getValue();
-            return ref != null && ref.get() == null;
-        });
+    private ReentrantLock getLock(String userSn){
+        expungeStaleEntries();
 
         return adsLock.compute(userSn, (key, ref) -> {
             if (ref != null){
-                Object lock = ref.get();
+                ReentrantLock lock = ref.get();
                 if (lock != null){
                     return ref;
                 }
             }
-            return new WeakReference<>(new Object());
+            return new LockWeakReference(key,new ReentrantLock(),lockReferenceQueue);
         }).get();
+    }
+
+    private void expungeStaleEntries() {
+        LockWeakReference ref;
+        while ((ref = (LockWeakReference)lockReferenceQueue.poll()) != null) {
+            adsLock.remove(ref.key,ref);
+        }
+    }
+
+    private static class LockWeakReference extends WeakReference<ReentrantLock> {
+        final String key;
+        LockWeakReference(String key, ReentrantLock referent, ReferenceQueue<? super ReentrantLock> q) {
+            super(referent, q);
+            this.key = key;
+        }
     }
 }

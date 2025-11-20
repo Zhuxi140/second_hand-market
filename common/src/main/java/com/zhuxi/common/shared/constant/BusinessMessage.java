@@ -5,6 +5,9 @@ package com.zhuxi.common.shared.constant;
  */
 public class BusinessMessage {
 
+    //--------------通用类-------------------------
+    public static final String TIMEOUT = "操作超时,请稍后重试";
+
     // -----------用户类-------------------------
     public static final String USER_NOT_EXIST = "用户不存在";
     public static final String USERNAME_IS_EXIST = "用户名已存在";
