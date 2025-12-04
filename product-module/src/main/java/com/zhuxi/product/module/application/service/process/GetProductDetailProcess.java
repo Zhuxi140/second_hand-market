@@ -3,7 +3,7 @@ package com.zhuxi.product.module.application.service.process;
 import com.zhuxi.common.domain.service.CommonCacheService;
 import com.zhuxi.common.infrastructure.properties.CacheKeyProperties;
 import com.zhuxi.common.shared.constant.BusinessMessage;
-import com.zhuxi.common.shared.exception.BusinessException;
+import com.zhuxi.common.shared.exception.business.BusinessException;
 import com.zhuxi.product.module.application.assembler.ToProductDetailVO;
 import com.zhuxi.product.module.domain.model.Product;
 import com.zhuxi.product.module.domain.model.ProductStatic;
@@ -15,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -30,6 +32,7 @@ public class GetProductDetailProcess {
     private final CommonCacheService commonCache;
     private final CacheKeyProperties properties;
     private final ProductCacheService cache;
+
 
     /**
      * 获取商品详细信息(未命中缓存)
@@ -48,6 +51,7 @@ public class GetProductDetailProcess {
                 log.error("获取商品详细信息出错-查库获取数据为null,key:{}", properties.getShProductKey() + productSn);
                 throw new BusinessException(BusinessMessage.DATA_EXCEPTION);
             }
+
             if (needStatic){
                 if (vo.getProductImages() == null){
                     String shProductImageKey = properties.getProductStaticKey() + productSn;
@@ -57,6 +61,10 @@ public class GetProductDetailProcess {
                 }
             }
 
+            // 判断是否为热门数据
+            boolean isHostData = checkHotData(vo.getHostScore());
+
+            // 静态数据缓存命中 直接使用缓存数据
             if (!needStatic) {
                 List<ProductImage> imageList = cachedStatics.stream()
                         .map(s -> {
@@ -70,7 +78,7 @@ public class GetProductDetailProcess {
             }
 
             // 异步回填缓存
-            asyncFillAllCaches(vo, productSn,needStatic);
+            asyncFillAllCaches(vo, productSn,needStatic,isHostData);
             return vo;
 
         } catch (BusinessException e) {
@@ -80,15 +88,18 @@ public class GetProductDetailProcess {
     }
 
     /**
-     * 获取商品详细信息(命中(部分)缓存)
+     * 获取商品详细信息(命中(或部分)缓存)
      * @param product 商品信息
      * @param productStatics 商品静态信息
      * @return 获取商品详细信息
      */
     public ProductDetailVO handlerProductInCache(Product product, List<ProductStatic> productStatics){
+
+        // 判断是否为热门数据
+        boolean isHostData = checkHotData(product.getHostScore().getScore());
         //获取卖家信息
         Long sellerId = product.getSellerId();
-        String sellerSn = cache.getUserSn(sellerId);
+        String sellerSn = commonCache.getUserSn(sellerId);
         if (sellerSn == null) {
             sellerSn = repository.getUserSn(sellerId);
             if (sellerSn == null){
@@ -106,6 +117,7 @@ public class GetProductDetailProcess {
                 log.error("获取卖家信息出错-查库获取数据为null,key:{},method:getSellerInfo(sellerSn:{})", userInfoKey, sellerSn);
                 throw new BusinessException(BusinessMessage.DATA_EXCEPTION);
             }
+            // 异步回填卖家信息缓存
             asyncSellerInfo(sellerInfo,sellerSn);
         }
 
@@ -121,13 +133,14 @@ public class GetProductDetailProcess {
             log.error("获取商品静态信息出错-查库获取数据为null,key:{}", properties.getProductStaticKey() + product.getProductSn().getSn());
             throw new BusinessException(BusinessMessage.DATA_EXCEPTION);
         }else{
-            asyncProductStatic(product, productStatics1);
+            asyncProductStatic(product, productStatics1,isHostData);
             return ToProductDetailVO.COVERT.toProductDetailVO(product, sellerInfo, productStatics1, sellerSn);
         }
     }
 
     @Async
-    protected void asyncFillAllCaches(ProductDetailVO vo, String productSn,boolean needStatic){
+    protected void asyncFillAllCaches(ProductDetailVO vo, String productSn,
+                                      boolean needStatic,boolean isHostData){
         String shProductKey = properties.getShProductKey() + productSn;
         String productStaticKey = properties.getProductStaticKey() + productSn;
         String userInfoKey = properties.getUserInfoKey() + vo.getSellerSn();
@@ -136,13 +149,13 @@ public class GetProductDetailProcess {
             commonCache.delKey(shProductKey);
             Product product = repository.getProductForCache(vo.getId());
             product.addNames(vo.getCategoryName(), vo.getConditionName());
-            cache.saveShProduct(product, productSn);
+            cache.saveShProduct(product, productSn,isHostData);
 
 
         if (needStatic) {
             commonCache.delKey(productStaticKey);
             List<ProductStatic> productStatics = repository.getProductStatics(vo.getId());
-            cache.saveProductStatic(productStatics, productSn);
+            cache.saveProductStatic(productStatics, productSn,isHostData);
         }
 
             commonCache.hashFlushValue(
@@ -166,7 +179,14 @@ public class GetProductDetailProcess {
     }
 
     @Async
-    protected void asyncProductStatic(Product product, List<ProductStatic> productStatics){
-            cache.saveProductStatic(productStatics, product.getProductSn().getSn());
+    protected void asyncProductStatic(Product product, List<ProductStatic> productStatics, boolean isHostData){
+            cache.saveProductStatic(productStatics, product.getProductSn().getSn(), isHostData);
+    }
+
+    private boolean checkHotData(BigDecimal hostScore){
+        if (hostScore == null){
+            return false;
+        }
+        return hostScore.compareTo(BigDecimal.valueOf(80)) >= 0;
     }
 }

@@ -3,7 +3,7 @@ package com.zhuxi.user.module.application.service.process.user;
 import com.zhuxi.common.domain.service.CommonCacheService;
 import com.zhuxi.common.infrastructure.properties.CacheKeyProperties;
 import com.zhuxi.common.shared.constant.BusinessMessage;
-import com.zhuxi.common.shared.exception.BusinessException;
+import com.zhuxi.common.shared.exception.business.BusinessException;
 import com.zhuxi.user.module.domain.user.model.User;
 import com.zhuxi.user.module.domain.user.repository.UserRepository;
 import com.zhuxi.user.module.domain.user.service.UserCacheService;

@@ -2,6 +2,7 @@ package com.zhuxi.common.domain.service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author zhuxi
@@ -17,11 +18,25 @@ public interface CommonCacheService {
     Long getUserIdBySn(String userSn);
 
     /**
+     * 通用String类型（so）的value
+     * @param key 缓存key
+     * @return 缓存数据
+     */
+    Object soGetValue(String key);
+
+    /**
+     * 获取用户编号
+     * @param userId 用户编号
+     * @return 用户编号
+     */
+    String getUserSn(Long userId);
+
+    /**
      * 缓存缺失的用户id或缓存加入id-sn映射
      *
      * @param userSn 用户编号
      * @param userId 用户id
-     * @param type   0:用户id-sn映射 1:缓存缺失的用户id 3: 0 and 1
+     * @param type   0:用户id-sn映射    1:缓存缺失的用户id      3: 0 and 1
      */
     void saveUserIdOrSn(String userSn,Long userId,Integer type);
 
@@ -30,6 +45,24 @@ public interface CommonCacheService {
      * @param key 缓存key
      */
     void saveNullValue(String key);
+
+    /**
+     * 缓存hash类型中单个字段的值
+     * @param hashKey 键名key
+     * @param field 字段
+     * @param value 值
+     */
+    void saveHashOneValue(String hashKey, String field, Object value);
+
+    /**
+     * 获取锁(互斥锁)
+     * @param key 缓存key
+     * @param value 缓存value
+     * @param timeout 锁过期时间
+     * @param unit 时间单位
+     * @return true:获取锁成功 false:获取锁失败
+     */
+    Boolean getLock(String key,Object value, long timeout, TimeUnit unit);
 
 
     /**

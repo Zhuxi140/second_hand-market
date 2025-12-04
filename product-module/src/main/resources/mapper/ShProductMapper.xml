@@ -1,0 +1,20 @@
+<!-- 为什么用 Keyset：避免 OFFSET 翻页的性能和一致性问题（新增/删除导致重复或丢数据） -->
+<mapper namespace="com.zhuxi.product.module.infrastructure.mapper.ShProductMapper">
+  <select id="listDesc" parameterType="map" resultType="com.zhuxi.product.module.interfaces.vo.ShProductVO">
+    SELECT id, product_sn, title, created_at
+    FROM sh_product
+    WHERE (created_at < #{cursorCreatedAt})
+       OR (created_at = #{cursorCreatedAt} AND id < #{cursorId})
+    ORDER BY created_at DESC, id DESC
+    LIMIT #{limit}
+  </select>
+
+  <select id="listAsc" parameterType="map" resultType="com.zhuxi.product.module.interfaces.vo.ShProductVO">
+    SELECT id, product_sn, title, created_at
+    FROM sh_product
+    WHERE (created_at > #{cursorCreatedAt})
+       OR (created_at = #{cursorCreatedAt} AND id > #{cursorId})
+    ORDER BY created_at ASC, id ASC
+    LIMIT #{limit}
+  </select>
+</mapper>

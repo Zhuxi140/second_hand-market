@@ -3,7 +3,7 @@ package com.zhuxi.user.module.domain.user.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.zhuxi.common.shared.constant.BusinessMessage;
 import com.zhuxi.common.shared.enums.Role;
-import com.zhuxi.common.shared.exception.BusinessException;
+import com.zhuxi.common.shared.exception.business.BusinessException;
 import com.zhuxi.common.shared.utils.JackSonUtils;
 import com.zhuxi.user.module.application.command.RegisterCommand;
 import com.zhuxi.user.module.domain.user.enums.Gender;
@@ -15,7 +15,6 @@ import com.zhuxi.user.module.interfaces.dto.user.UserRegisterDTO;
 import com.zhuxi.user.module.interfaces.dto.user.UserUpdateInfoDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

@@ -1,4 +1,6 @@
-package com.zhuxi.common.shared.exception;
+package com.zhuxi.common.shared.exception.cache;
+
+import com.zhuxi.common.shared.exception.LocationException;
 
 /**
  * @author zhuxi

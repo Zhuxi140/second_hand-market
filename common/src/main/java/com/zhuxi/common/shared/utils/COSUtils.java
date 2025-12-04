@@ -1,7 +1,7 @@
 package com.zhuxi.common.shared.utils;
 
 import com.zhuxi.common.shared.enums.MimePart;
-import com.zhuxi.common.shared.exception.COSException;
+import com.zhuxi.common.shared.exception.safe.COSException;
 import lombok.extern.slf4j.Slf4j;
 
 /**

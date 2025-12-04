@@ -49,7 +49,7 @@ public class ProductDetailVO {
     @Schema(description = "商品浏览次数")
     private Long viewCount;
     @Schema(description = "商品热度指数")
-    private Long hostScore;
+    private BigDecimal hostScore;
     @Schema(description = "商品图片列表")
     private List<ProductImage> productImages;
 

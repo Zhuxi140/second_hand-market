@@ -1,0 +1,126 @@
+仿闲鱼项目代码锐评（当前阶段）
+
+总览
+- 架构分模块是对的，但“缓存一致性、分页策略、异步线程管理、类型处理器配置”这些关键细节上漏洞百出，线上一上流量就得崩。下面逐条点名。
+
+product-module
+1) ProductServiceImpl.getCategoryList (已处理  待完善：线程池)
+   - 问题：缓存未命中直接查库后用 CompletableFuture.runAsync 异步写缓存，没有负缓存（空列表），没有过期控制，没有并发抖动保护，异常直接吞掉，线程池用的是公共池。一次高并发就会打穿库。
+   - 更好的做法：采用 Cache-Aside + 负缓存（空结果短 TTL）+ 互斥锁（或 singleflight）+ 逻辑过期（后台刷新）。必须使用应用级 ThreadPoolTaskExecutor 并捕获异常；热门数据预热到本地缓存（Caffeine）+ Redis 双层缓存。
+
+2) ProductServiceImpl.buildTree/findChildren (已处理)
+   - 问题：O(n^2) 构树，分类节点一多就卡死。
+   - 更好的做法：用 Map<id, node> 一次扫描构建，线性复杂度；父子关系校验异常直接告警。
+
+3) getShConditions(已处理 待完善: 线程池)
+   - 问题：与 getCategoryList 同样的缓存打穿、无 TTL、无负缓存、异步写无异常处理。
+   - 更好的做法：统一缓存策略组件（CommonCacheService 应该承接），空结果缓存、加过期、统一线程池、统一指标监控。
+
+4) getShProductList(ShProductParam)
+   - 问题：靠字符串 "ASC"/"DESC" 判方向，大小写不容错；首次页用 Long.MAX_VALUE/MIN_VALUE + now/min 时间是拍脑袋，容易和索引不匹配；lastSn -> id 每次都走库，没有 Sn->Id 缓存；查询容易出现“翻页重复/漏数据”。
+   - 更好的做法：严格 Keyset Pagination：(lastCreatedAt,lastId) 作为游标，WHERE (created_at,<>) OR (created_at= AND id<>)，同时建立联合索引 (created_at,id)；方向用枚举 + 校验；Sn->Id 读缓存，未命中查库回填；参数 limit/offset 校验上限，拒绝大页。
+
+5) getShProductDetail(已处理)
+   - 问题：主体信息未命中直接查库，productStatics 可能也是空；查库后未明确回填缓存（过程类里若没写就彻底不一致）；没有负缓存导致穿透；异常时统一错误码但无诊断信息。
+   - 更好的做法：Cache-Aside：查库成功立即写回缓存（含 TTL/逻辑过期），查库为空写负缓存；product 与 statics 分 key 管理；对“下架/删除”增加缓存失效广播。
+
+6) updateProduct
+   - 问题：只写库，不做缓存失效；列表页、详情页、静态属性全可能脏读。
+   - 更好的做法：事务提交后（TransactionSynchronization.afterCommit）统一失效与重建：detail、statics、list、聚合统计缓存；使用事件总线/MQ（Kafka/RabbitMQ）广播变更，异步重建热点缓存。
+
+7) delProduct
+   - 问题：获取 productId 失败就 saveNullValue(shProductKey+productSn) 但只处理一个 key；删除只操作库，不做缓存清理；没有幂等与防并发重复删除。
+   - 更好的做法：先校验存在性（BloomFilter + Sn->Id 缓存）；库删除成功后：失效所有相关缓存（详情、静态、用户发布列表、分类聚合），发布删除事件做最终一致性；幂等删除（逻辑删除标识），防二次操作。
+
+8) 异步缓存写入
+   - 问题：runAsync 没有线程池、没有异常日志、没有降级策略、可能与事务提交时序打架（读到未提交数据）。
+   - 更好的做法：注入 ThreadPoolTaskExecutor，所有异步在 afterCommit 触发；包裹 try-catch + 监控指标，异常重试/降级。
+
+9) 缓存 Key 管理
+   - 问题：CacheKeyProperties 有 NULL_VALUE 但各处未统一使用；Key 拼接分散，过期策略不一致。
+   - 更好的做法：统一 CacheKey 工具，所有 key 生成、负缓存标记、TTL 策略集中管理；强制约束模块的缓存生命周期。
+
+10) 类型处理器配置错误
+   - 问题：application-product.yaml 写成 com.zhuxi.productModule.infrastructure.typehandler，实际包是 com.zhuxi.product.module.infrastructure.typehandler。类型处理器不生效，隐性 Bug。
+   - 更好的做法：修正为 com.zhuxi.product.module.infrastructure.typehandler，并在启动日志校验扫描结果。
+
+user-module
+1) UserController.CORS
+   - 问题：@CrossOrigin(origins="*") 生产级别安全灾难。
+   - 更好的做法：统一在网关/全局配置里按域名白名单控制，携带凭证、方法/头受限，非控制器逐个放开。
+
+2) 登录与刷新
+   - 问题：刷新令牌不轮换（refresh token 固定），容易被劫持复用；刷新接口不绑定设备/指纹；无重放保护。
+   - 更好的做法：实现 Refresh Token Rotation（每次刷新颁发新 refresh 并作废旧的），设备指纹绑定，加入一次性令牌与滑动窗口，Redis 维护黑名单与版本号。
+
+3) 登出
+   - 问题：直接传 Authorization，未见规范化 Bearer 前缀处理；黑名单标记与 TTL 控制未说明。
+   - 更好的做法：标准解析 Bearer，加入 access token 黑名单与过期回收；对同一用户的所有会话可选择级联失效。
+
+4) 权限注解 PermissionCheck
+   - 问题：接口上贴注解但未见统一异常处理与审计日志，越权审计缺失；数据所有权检查依赖传参，容易被绕。
+   - 更好的做法：AOP 层统一拦截，记录主体、资源、动作、结果的审计日志；数据所有权由服务层基于 userSn->userId 与资源 ownerId 强校验。
+
+5) DTO 校验
+   - 问题：参数校验只靠 @Valid，未设置限流/验证码等攻击面，容易被暴力破解。
+   - 更好的做法：登录、注册、敏感操作加限流与验证码；IP + 用户维度的熔断；错误提示模糊化防信息泄露。
+
+6) Token 载荷
+   - 问题：role、userSn 直接进 JWT，未做最小化；未加 jti 与版本。
+   - 更好的做法：JWT 载荷最小化；加 jti、token version；后端校验版本与黑名单。
+
+file-module（COSController）
+1) 注入实现类
+   - 问题：直接注入 FileServiceImpl，强耦合。
+   - 更好的做法：面向接口注入 FileService，便于替换存储后端。
+
+2) 权限缺失
+   - 问题：上传/查看接口无权限校验，任意获取预签名 URL。
+   - 更好的做法：用户登录态 + 资源授权校验；查看签名必须验证资源归属或公开权限。
+
+3) 风险校验
+   - 问题：文件类型/大小校验可能只在服务里，接口未限流未防刷。
+   - 更好的做法：接口层限流；后端严格校验 mime、扩展名白名单、大小上限；回传哈希校验。
+
+4) 幂等与状态
+   - 问题：confirm 未体现幂等，重复提交可能脏状态。
+   - 更好的做法：基于上传事务/对象键的幂等校验；状态流转有限状态机（待上传->已上传->已确认）。
+
+5) 预签名有效期
+   - 问题：未说明短期有效控制与一次性限制。
+   - 更好的做法：短 TTL + 单次使用限制 + 绑定用户与对象键。
+
+6) 错误处理
+   - 问题：null 返回就 fail，缺少明确错误码与诊断信息。
+   - 更好的做法：统一错误码，错误原因最小披露，服务日志详细记录。
+
+common/main 配置与基础设施
+1) application-product.yaml 类型处理器包错误（已点名），必须修。
+2) main/application.yaml Redis 端口 6380 非默认，注意与部署一致性；加超时与序列化配置（String/Json）。
+3) MyBatis mapper-locations 全局扫 classpath*:mapper/*.xml，跨模块冲突风险；建议每模块独立配置。
+4) CacheKeyProperties 使用 @ConstructorBinding，但多个 key/TTL 未在各模块统一落地；建议集中配置与校验启动失败。
+5) 异常处理
+   - 问题：各处直接抛 BusinessException，缺少全局异常转换与日志上下文。
+   - 更好的做法：GlobalExceptionHandler 统一包装响应、埋点 traceId、错误分类统计。
+
+跨模块通病
+- 缓存一致性：写操作未统一失效/重建，读操作无负缓存与并发保护。
+- 异步线程：随手 runAsync，没线程池、没监控、没重试。
+- 分页与索引：Keyset 不规范、索引不明确、游标策略随意。
+- 安全：CORS 放开、COS 接口无鉴权、刷新令牌不轮换。
+- 配置：类型处理器扫描路径错误，属于线上致命隐患。
+
+高优先级整改清单（按影响度）
+1) 修复 application-product.yaml 的 type-handlers-package 到 com.zhuxi.product.module.infrastructure.typehandler，并在启动时校验类型处理器加载。
+2) 引入统一的缓存策略组件（Cache-Aside + 负缓存 + 逻辑过期 + 本地缓存 + 互斥），替换所有异步缓存写为 afterCommit + 线程池执行，异常可观测。
+3) 对更新/删除/发布类写操作，加事务后钩子统一失效相关缓存，并通过 MQ 事件重建热点缓存。
+4) 商品列表分页改为严格的 Keyset Pagination，建立 (created_at,id) 联合索引，last 游标携带二元组。
+5) 实施 Refresh Token Rotation，加入 jti 与版本号，黑名单与会话管理完善；CORS 改为网关统一白名单。
+6) COS 接口加鉴权与限流，查看签名校验资源归属，上传确认幂等；类型与大小白名单强校验。
+7) 构树改为 Map 一次扫描法，消除 O(n^2)。
+8) 所有 CompletableFuture 换成受管线程池 + 异常处理，禁止公共 ForkJoin 池。
+9) Sn->Id 映射读缓存（Redis），未命中查库后回填，减少无谓查询。
+10) 建立统一错误码与全局异常处理器，最小化对外信息泄露但日志可诊断。
+
+最后提醒
+- 别再“先删后异步缓存”却不做一致性，这叫自杀式设计。要么写穿/写回统一策略，要么基于事件的最终一致性，把缓存当一级派生数据管理。

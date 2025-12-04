@@ -2,10 +2,10 @@ package com.zhuxi.product.module.infrastructure.repository.impl;
 
 import com.zhuxi.common.shared.constant.BusinessMessage;
 import com.zhuxi.common.shared.constant.CommonMessage;
-import com.zhuxi.common.shared.exception.BusinessException;
-import com.zhuxi.common.shared.exception.PersistenceException;
+import com.zhuxi.common.shared.exception.business.BusinessException;
 import com.zhuxi.product.module.domain.model.Product;
 import com.zhuxi.product.module.domain.model.ProductStatic;
+import com.zhuxi.product.module.domain.objectValue.HostScore;
 import com.zhuxi.product.module.domain.repository.ProductRepository;
 import com.zhuxi.product.module.infrastructure.mapper.ProductMapper;
 import com.zhuxi.product.module.interfaces.param.ShProductParam;
@@ -29,12 +29,12 @@ public class ProductRepositoryImpl implements ProductRepository {
     // 商品分类列表
     @Override
     public List<CategoryVO> getCategoryList(int limit, int offset) {
-        try {
-            return productMapper.getCategoryList(limit, offset);
-        }catch (Exception e){
-            log.error("getCategoryList-case:{} message:{}", CommonMessage.DATABASE_SELECT_EXCEPTION,e.getMessage());
+        List<CategoryVO> list = productMapper.getCategoryList(limit, offset);
+        if (list == null || list.isEmpty()){
+            log.error("getCategoryList-case:{}", CommonMessage.DATABASE_SELECT_EXCEPTION);
             throw new BusinessException(BusinessMessage.GET_CATEGORY_ERROR);
         }
+        return list;
     }
 
     // 保存或修改商品
@@ -50,7 +50,7 @@ public class ProductRepositoryImpl implements ProductRepository {
                 int insert = productMapper.insert(product);
                 if (insert <= 0){
                     log.error("product-save-case:{}", CommonMessage.DATABASE_INSERT_EXCEPTION);
-                    throw new PersistenceException(BusinessMessage.SAVE_PRODUCT_ERROR);
+                    throw new BusinessException(BusinessMessage.SAVE_PRODUCT_ERROR);
                 }
             }
     }
@@ -78,12 +78,12 @@ public class ProductRepositoryImpl implements ProductRepository {
     // 获取二手商品成色列表
     @Override
     public List<ConditionSHVO> getShConditions() {
-        try {
-            return productMapper.getShConditions();
-        }catch (Exception e){
-            log.error("getShConditions-case:{} message:{}", CommonMessage.DATABASE_SELECT_EXCEPTION,e.getMessage());
+        List<ConditionSHVO> shConditions = productMapper.getShConditions();
+        if (shConditions == null || shConditions.isEmpty()){
+            log.error("getShConditions-case:{}", CommonMessage.DATABASE_SELECT_EXCEPTION);
             throw new BusinessException(BusinessMessage.GET_SH_CONDITION_ERROR);
         }
+        return shConditions;
     }
 
     @Override
@@ -170,5 +170,10 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     public String getUserSn(Long userId) {
         return productMapper.getUserSn(userId);
+    }
+
+    @Override
+    public HostScore getHostScore(Long productId) {
+        return productMapper.getHostScore(productId);
     }
 }

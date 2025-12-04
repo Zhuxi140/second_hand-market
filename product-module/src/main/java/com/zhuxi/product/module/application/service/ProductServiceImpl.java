@@ -3,12 +3,13 @@ package com.zhuxi.product.module.application.service;
 import com.zhuxi.common.domain.service.CommonCacheService;
 import com.zhuxi.common.infrastructure.properties.CacheKeyProperties;
 import com.zhuxi.common.shared.constant.BusinessMessage;
-import com.zhuxi.common.shared.exception.BusinessException;
-import com.zhuxi.common.shared.exception.PersistenceException;
-import com.zhuxi.product.module.application.service.process.GetProductDetailProcess;
-import com.zhuxi.product.module.application.service.process.PublishShProcess;
+import com.zhuxi.common.shared.constant.LogicalCache;
+import com.zhuxi.common.shared.exception.business.BusinessException;
+import com.zhuxi.common.shared.exception.cache.ValueNullException;
+import com.zhuxi.product.module.application.service.process.*;
 import com.zhuxi.product.module.domain.model.Product;
 import com.zhuxi.product.module.domain.model.ProductStatic;
+import com.zhuxi.product.module.domain.objectValue.HostScore;
 import com.zhuxi.product.module.domain.repository.ProductRepository;
 import com.zhuxi.product.module.domain.service.ProductCacheService;
 import com.zhuxi.product.module.domain.service.ProductService;
@@ -21,10 +22,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+
+import static java.lang.Thread.sleep;
 
 /**
  * @author zhuxi
@@ -36,29 +44,32 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository repository;
     private final ProductCacheService cache;
-    private final CacheKeyProperties properties;
-    private final PublishShProcess publishShProcess;
     private final CommonCacheService commonCache;
+    private final PublishShProcess publishShProcess;
+    private final CacheKeyProperties properties;
     private final GetProductDetailProcess getProductDetailProcess;
+    private final UpdateProductProcess updateProductProcess;
+    private final GetCategoryProcess getCategoryProcess;
+    private final GetShConditionsProcess getShConditionsProcess;
 
     @Override
-    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public List<CategoryTreeVO> getCategoryList(int limit, int offset) {
 
-        List<CategoryVO> list = cache.getCategoryList();
-        if (list == null) {
-            list = repository.getCategoryList(limit, offset);
-            // 异步缓存
-            List<CategoryVO> finalList = list;
-            CompletableFuture.runAsync(() -> cache.saveCategoryList(finalList));
+        // 从缓存中直接获取数据
+        List<CategoryTreeVO> dataByCache = getCategoryProcess.getDataByCache();
+        if (dataByCache != null){
+            return dataByCache;
         }
 
-        // 构建树形结构
-        List<CategoryTreeVO> treeVO = list.stream()
-                .map(CategoryTreeVO::new)
-                .toList();
+        // 互斥锁 未获取到锁的 睡眠50ms 后尝试重新获取缓存 否则返回List.of()
+        long threadId = Thread.currentThread().getId();
+        List<CategoryTreeVO> data = getCategoryProcess.getLock(threadId);
+        if (data != null){
+            return data;
+        }
 
-        return buildTree(treeVO);
+        // 持锁线程查库并缓存
+        return getCategoryProcess.getDataByDb(threadId,limit, offset);
     }
 
     @Override
@@ -71,24 +82,19 @@ public class ProductServiceImpl implements ProductService {
         try{
             //写入
             publishShProcess.save(product);
-        }catch (PersistenceException e){
+        }catch (BusinessException e){
             // 失败，保存为草稿
-            publishShProcess.saveDraft( product);
+            try {
+                publishShProcess.saveDraft(product);
+            }catch (BusinessException e1){
+                log.error("draft-save-error: {}",e1.getMessage());
+                throw e;
+            }
+            publishShProcess.asyncCache(product);
             throw new BusinessException(BusinessMessage.SAVE_PRODUCT_ERROR_SAVE_DRAFT);
         }
-        // 异步缓存
-        CompletableFuture.runAsync(()->{
-            // 缓存商品信息
-            cache.saveShProduct(product,product.getProductSn().getSn());
-            // 缓存商品静态信息
-            List<ProductStatic> productStatics = publishShProcess.getProductStatics(product.getId());
-            if (productStatics != null){
-                cache.saveProductStatic(productStatics,product.getProductSn().getSn());
-            }else{
-                log.warn("publishShProduct-error:查库获取商品静态信息为null. productId:{}",product.getId());
-            }
-        });
-
+       // 异步缓存
+        publishShProcess.asyncCache( product);
         return product.getProductSn().getSn();
     }
 
@@ -96,14 +102,17 @@ public class ProductServiceImpl implements ProductService {
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public List<ConditionSHVO> getShConditions() {
         List<ConditionSHVO> shConditions = cache.getShConditions();
-        if (shConditions == null){
-            // 未命中
-            shConditions = repository.getShConditions();
-            List<ConditionSHVO> finalShConditions = shConditions;
-            //异步缓存
-            CompletableFuture.runAsync(() -> cache.saveConditionList(finalShConditions));
+        if(shConditions != null){
+            return shConditions;
         }
-        return shConditions;
+
+        long threadId = Thread.currentThread().getId();
+        List<ConditionSHVO> data = getShConditionsProcess.getLock(shConditions, threadId);
+        if (data != null){
+            return data;
+        }
+
+        return getShConditionsProcess.getDataByDB(shConditions, threadId);
     }
 
     @Override
@@ -129,41 +138,57 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public ProductDetailVO getShProductDetail(String productSn) {
+        LogicalCache<List<ProductStatic>> productStatics = cache.getProductStatics(productSn);
         Product product = cache.getDetailProductInfo(productSn);
-        List<ProductStatic> productStatics = cache.getProductStatics(productSn);
         if (product == null){
             // 商品详细主体信息未命中 直接查库
-            ProductDetailVO productDetailVO = getProductDetailProcess.handleProductNotInCache(productSn, productStatics);
-            if (productDetailVO == null){
-                throw new BusinessException(BusinessMessage.GET_PRODUCT_DETAIL_ERROR);
-            }
-            return productDetailVO;
+            return getProductDetailProcess.handleProductNotInCache(productSn, productStatics.getData());
         }
-        return getProductDetailProcess.handlerProductInCache(product, productStatics);
+        // 商品详细主体信息命中 处理缓存数据
+        return getProductDetailProcess.handlerProductInCache(product, productStatics.getData());
     }
 
     @Override
-    @Transactional(rollbackFor = BusinessException.class)
     public void updateProduct(UpdateProductDTO update, String userSn) {
+        String productSn = update.getProductSn();
         // 获取商品id
-        Long productId = repository.getProductIdBySn(update.getProductSn());
-        // 获取用户id
-        Long sellerId = repository.getUserIdBySn(userSn);
-        update.setSellerId(sellerId);
 
-        Product product = new Product();
-        // 修改商品
-        product.modify(update,productId);
+        Long productId = updateProductProcess.getProductId(productSn);
+
+        // 获取用户id
+        Long sellerId = updateProductProcess.getSellerId(userSn);
+
+        //修改商品
+        Product product = updateProductProcess.updateProduct(update, productId, sellerId);
 
         //写入
-        repository.save(product);
+        updateProductProcess.save(product);
+
+        // 删除缓存
+        commonCache.delKey(properties.getShProductKey() + productSn);
+
+        // 异步缓存
+        CompletableFuture.runAsync(()->{
+            ProductDetailVO detail = repository.getShProductDetail(productSn, true);
+            boolean isHotData = checkHotData(detail.getHostScore());
+            updateProductProcess.asyncCache(detail, isHotData);
+        });
     }
 
     @Override
     @Transactional(rollbackFor = BusinessException.class)
     public void delProduct(String productSn) {
 
-        Long productId = repository.getProductIdBySn(productSn);
+        Long productId = cache.getProductId(productSn);
+        if (productId == null){
+            try {
+                productId = repository.getProductIdBySn(productSn);
+            }catch (BusinessException e){
+                log.error("del-product-error: {}",e.getMessage());
+                commonCache.saveNullValue(properties.getShProductKey() + productSn);
+                throw new BusinessException(BusinessMessage.DATA_EXCEPTION);
+            }
+        }
         repository.delProduct(productId);
     }
 
@@ -171,34 +196,6 @@ public class ProductServiceImpl implements ProductService {
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public List<MeShProductVO> getMeShProductList(String userSn) {
         return repository.getMeShProductList(repository.getUserIdBySn(userSn));
-    }
-
-
-    private List<CategoryTreeVO> buildTree(List<CategoryTreeVO> list){
-        List<CategoryTreeVO> parentNodes = new ArrayList<>();
-
-        for (CategoryTreeVO node : list){
-            if (node.getParentId() == null || node.getParentId() == 0){
-                parentNodes.add(node);
-            }
-        }
-
-        for (CategoryTreeVO parentNode : parentNodes){
-            findChildren(parentNode, list);
-        }
-        return parentNodes;
-    }
-
-    private void findChildren(CategoryTreeVO parentNode, List<CategoryTreeVO> allNodes){
-        for (CategoryTreeVO node : allNodes){
-            if (parentNode.getId().equals(node.getParentId())){
-                if (parentNode.getChildren() == null){
-                    parentNode.setChildren(new ArrayList<>());
-                }
-                parentNode.getChildren().add(node);
-                findChildren(node, allNodes);
-            }
-        }
     }
 
     private void setProductIdAndTime(ShProductParam shProductParam,boolean isFirst,boolean isDesc){
@@ -214,5 +211,12 @@ public class ProductServiceImpl implements ProductService {
                 shProductParam.setLastCreatedAt(LocalDateTime.MIN);
             }
         }
+    }
+
+    private boolean checkHotData(BigDecimal hostScore){
+        if (hostScore == null){
+            return false;
+        }
+        return hostScore.compareTo(BigDecimal.valueOf(80)) >= 0;
     }
 }

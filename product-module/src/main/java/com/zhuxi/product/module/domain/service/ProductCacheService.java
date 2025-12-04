@@ -1,5 +1,6 @@
 package com.zhuxi.product.module.domain.service;
 
+import com.zhuxi.common.shared.constant.LogicalCache;
 import com.zhuxi.product.module.domain.model.Product;
 import com.zhuxi.product.module.domain.model.ProductStatic;
 import com.zhuxi.product.module.interfaces.vo.CategoryVO;
@@ -42,14 +43,15 @@ public interface ProductCacheService {
      * @param product 商品
      * @param productSn 商品编号
      */
-    void saveShProduct(Product product,String productSn);
+    void saveShProduct(Product product,String productSn,boolean isHotData);
 
     /**
      * 缓存商品静态数据
      * @param pStatics 商品静态数据
      * @param productSn 商品编号
+     * @param isHotData 是否为热数据
      */
-    void saveProductStatic(List<ProductStatic> pStatics,String productSn);
+    void saveProductStatic(List<ProductStatic> pStatics,String productSn,boolean isHotData);
 
     /**
      * 获取商品详情缓存信息中的商品部分信息
@@ -64,14 +66,7 @@ public interface ProductCacheService {
      * @param productSn 商品编号
      * @return 商品静态数据
      */
-    List<ProductStatic> getProductStatics(String productSn);
-
-    /**
-     * 获取用户编号
-     * @param userId 用户编号
-     * @return 用户编号
-     */
-    public String getUserSn(Long userId);
+    LogicalCache<List<ProductStatic>> getProductStatics(String productSn);
 
     /**
      * 获取商品详细信息中的卖家信息
@@ -79,4 +74,11 @@ public interface ProductCacheService {
      * @return 卖家信息
      */
     List<Object> getSellerInfo(String userSn);
+
+    /**
+     * 获取商品编号
+     * @param productSn 商品编号
+     * @return 商品编号
+     */
+    Long getProductId(String productSn);
 }

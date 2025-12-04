@@ -2,10 +2,9 @@ package com.zhuxi.user.module.application.service;
 
 
 import com.zhuxi.common.shared.constant.BusinessMessage;
-import com.zhuxi.common.shared.exception.BusinessException;
+import com.zhuxi.common.shared.exception.business.BusinessException;
 import com.zhuxi.user.module.application.service.process.address.InsertAdsProcess;
 import com.zhuxi.user.module.application.service.process.address.UpdateAddressProcess;
-import com.zhuxi.user.module.domain.address.enums.IsDefault;
 import com.zhuxi.user.module.domain.address.model.UserAddress;
 import com.zhuxi.user.module.domain.address.repository.UserAddressRepository;
 import com.zhuxi.user.module.domain.address.service.UserAddressCacheService;
@@ -19,7 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.List;

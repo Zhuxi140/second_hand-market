@@ -1,5 +1,6 @@
-package com.zhuxi.common.shared.exception;
+package com.zhuxi.common.shared.exception.business;
 
+import com.zhuxi.common.shared.exception.LocationException;
 import lombok.Getter;
 
 /**

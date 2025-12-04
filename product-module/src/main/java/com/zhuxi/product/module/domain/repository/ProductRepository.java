@@ -2,9 +2,11 @@ package com.zhuxi.product.module.domain.repository;
 
 import com.zhuxi.product.module.domain.model.Product;
 import com.zhuxi.product.module.domain.model.ProductStatic;
+import com.zhuxi.product.module.domain.objectValue.HostScore;
 import com.zhuxi.product.module.interfaces.param.ShProductParam;
 import com.zhuxi.product.module.interfaces.vo.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -125,6 +127,14 @@ public interface ProductRepository {
      * @return 用户编号
      */
     String getUserSn(Long userId);
+
+
+    /**
+     * 获取商品热度指数
+     * @param productId 商品id
+     * @return 热度指数
+     */
+    HostScore getHostScore(Long productId);
 
 
 }

@@ -3,7 +3,9 @@ package com.zhuxi.product.module.application.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.zhuxi.common.infrastructure.properties.CacheKeyProperties;
 import com.zhuxi.common.shared.constant.CacheMessage;
-import com.zhuxi.common.shared.exception.CacheException;
+import com.zhuxi.common.shared.constant.LogicalCache;
+import com.zhuxi.common.shared.exception.cache.CacheException;
+import com.zhuxi.common.shared.exception.cache.ValueNullException;
 import com.zhuxi.common.shared.utils.JackSonUtils;
 import com.zhuxi.common.shared.utils.RedisUtils;
 import com.zhuxi.product.module.domain.model.Product;
@@ -21,7 +23,6 @@ import org.springframework.stereotype.Service;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -61,6 +62,7 @@ public class ProductCacheServiceImpl implements ProductCacheService {
 
     @Override
     public List<CategoryVO> getCategoryList() {
+        checkNullValue(properties.getCategoryKey());
         String categoryKey = properties.getCategoryKey();
         String json = redisUtils.ssGetValue(categoryKey);
         if (json == null){
@@ -89,15 +91,20 @@ public class ProductCacheServiceImpl implements ProductCacheService {
     }
 
     @Override
-    public void saveShProduct(Product product,String productSn) {
+    public void saveShProduct(Product product,String productSn,boolean isHotData) {
         if (product == null){
             log.warn("product-is-null,商品信息缓存失败-productSn:{}", productSn);
             return;
         }
         List<String> hashKey = new ArrayList<>();
         hashKey.add(properties.getShProductKey()+productSn);
+        if (isHotData){
+            // 热门数据永久缓存
+            hashKey.add("1");
+        }
+        Long shProductExpire = properties.getShProductExpire();
         List<Object> values = new ArrayList<>();
-        values.add(properties.getShProductExpire());
+        values.add(shProductExpire);
         values.add("id");
         values.add(product.getId());
         values.add("productSn");
@@ -133,6 +140,8 @@ public class ProductCacheServiceImpl implements ProductCacheService {
         values.add("createTime");
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         values.add(product.getCreateTime().format(formatter));
+        values.add("expireTime");
+        values.add(TimeUnit.SECONDS.toMillis(shProductExpire) + System.currentTimeMillis());
 
         redisUtils.executeLuaScript(
                 saveScript,
@@ -142,18 +151,30 @@ public class ProductCacheServiceImpl implements ProductCacheService {
     }
 
     @Override
-    public void saveProductStatic(List<ProductStatic> pStatics, String productSn) {
+    public void saveProductStatic(List<ProductStatic> pStatics, String productSn,boolean isHotData) {
         if (pStatics == null){
             log.warn("productStatic-list-is-null,商品静态资源缓存失败 productSn:{}", productSn);
             return;
         }
-        String json = JackSonUtils.toJson(pStatics);
+        Long shProductExpire = properties.getShProductExpire();
+        // 封装逻辑过期时间
+        LogicalCache<Object> logicalCache = new LogicalCache<>(pStatics, shProductExpire);
+        String json = JackSonUtils.toJson(logicalCache);
+        // 热门数据永久缓存 + 逻辑过期
+        if (isHotData){
+            redisUtils.ssSetValueNoExpire(
+                    properties.getProductStaticKey() + productSn,
+                    json
+            );
+        }
+        // 普通数据 物理过期 = 逻辑过期 统一格式
         redisUtils.ssSetValue(
                 properties.getProductStaticKey() + productSn,
                 json,
-                properties.getShProductExpire(),
+                shProductExpire,
                 TimeUnit.SECONDS
         );
+
     }
 
     @Override
@@ -163,7 +184,8 @@ public class ProductCacheServiceImpl implements ProductCacheService {
         }
         String key = properties.getShProductKey() + productSn;
         checkNullValue(key);
-        List<String> values = List.of("productSn","sellerId", "title", "description", "categoryId","categoryName", "price", "conditionId","conditionName","status", "location", "viewCount", "hostScore");
+        List<String> values = List.of("productSn","sellerId", "title", "description", "categoryId","categoryName",
+                "price", "conditionId","conditionName","status", "location", "viewCount", "hostScore","expireTime");
         List<String> hashKey = List.of(key);
         Object obj = redisUtils.executeLuaScript(getScript, hashKey, values);
         if (obj == null){
@@ -183,20 +205,7 @@ public class ProductCacheServiceImpl implements ProductCacheService {
         return JackSonUtils.convert(productInfo, Product.class);
     }
 
-    @Override
-    public String getUserSn(Long userId){
-        if (userId == null){
-            throw new CacheException(CacheMessage.ARGS_IS_NULL_OR_EMPTY);
-        }
-        String useridMapSnKey = properties.getUseridMapSnKey();
-        checkNullValue(useridMapSnKey);
-        // 获取id-sn映射
-        Object seller = redisUtils.hashGet(useridMapSnKey, userId.toString());
-        if (seller == null){
-            return null;
-        }
-        return seller.toString();
-    }
+
 
     @Override
     public List<Object> getSellerInfo(String userSn){
@@ -213,7 +222,14 @@ public class ProductCacheServiceImpl implements ProductCacheService {
     }
 
     @Override
-    public List<ProductStatic> getProductStatics(String productSn){
+    public Long getProductId(String productSn) {
+        String key = properties.getShProductKey() + productSn;
+        checkNullValue(key);
+        return (Long) redisUtils.hashGet(key, "id");
+    }
+
+    @Override
+    public LogicalCache<List<ProductStatic>> getProductStatics(String productSn){
         if (productSn == null || productSn.isBlank()){
             throw new CacheException(CacheMessage.ARGS_IS_NULL_OR_EMPTY);
         }
@@ -223,7 +239,7 @@ public class ProductCacheServiceImpl implements ProductCacheService {
         if (json == null){
             return null;
         }
-        return JackSonUtils.readValue(json, new TypeReference<List<ProductStatic>>() {});
+        return JackSonUtils.readValue(json, new TypeReference<LogicalCache<List<ProductStatic>>>() {});
     }
 
     // 检查缓存中是否存在NULL_VALUE标记 用于拦截重复无效不存在的sn的请求
@@ -234,7 +250,8 @@ public class ProductCacheServiceImpl implements ProductCacheService {
         }
 
         if (result.equals(properties.getNULL_VALUE())) {
-            throw new CacheException(CacheMessage.NOT_EXIST_DATA);
+            log.warn("cache-is-NULL_VALUE,productSn:{}", key);
+            throw new ValueNullException(CacheMessage.NOT_EXIST_DATA);
         }
     }
 

@@ -2,7 +2,7 @@ package com.zhuxi.user.module.infrastructure.repository.impl;
 
 import com.zhuxi.common.shared.constant.BusinessMessage;
 import com.zhuxi.common.shared.constant.CommonMessage;
-import com.zhuxi.common.shared.exception.BusinessException;
+import com.zhuxi.common.shared.exception.business.BusinessException;
 import com.zhuxi.user.module.domain.address.model.UserAddress;
 import com.zhuxi.user.module.domain.address.repository.UserAddressRepository;
 import com.zhuxi.user.module.infrastructure.mapper.UserAddressMapper;

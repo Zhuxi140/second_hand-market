@@ -3,16 +3,13 @@ package com.zhuxi.common.applicaiton.cache;
 import com.zhuxi.common.domain.service.CommonCacheService;
 import com.zhuxi.common.infrastructure.properties.CacheKeyProperties;
 import com.zhuxi.common.shared.constant.CacheMessage;
-import com.zhuxi.common.shared.exception.CacheException;
+import com.zhuxi.common.shared.exception.cache.CacheException;
 import com.zhuxi.common.shared.utils.RedisUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.security.Key;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -43,6 +40,11 @@ public class CommonCacheServiceImpl implements CommonCacheService {
     }
 
     @Override
+    public Object soGetValue(String key) {
+        return redisUtils.soGetValue(key);
+    }
+
+    @Override
     public void saveUserIdOrSn(String userSn, Long userId, Integer type) {
         if (type == 1){
             redisUtils.hashSet(properties.getUserInfoKey() + userSn, Map.of("id", userId));
@@ -64,6 +66,16 @@ public class CommonCacheServiceImpl implements CommonCacheService {
     }
 
     @Override
+    public void saveHashOneValue(String hashKey, String field, Object value) {
+        redisUtils.hashSet(hashKey, Map.of(field, value));
+    }
+
+    @Override
+    public Boolean getLock(String key, Object value, long timeout, TimeUnit unit) {
+        return redisUtils.soSetIfAbsent(key, value, timeout, unit);
+    }
+
+    @Override
     public void delKey(String key) {
         Boolean b = redisUtils.deleteKey(key);
         if (!b){
@@ -74,6 +86,32 @@ public class CommonCacheServiceImpl implements CommonCacheService {
     @Override
     public void hashFlushValue(Map<String, Object> map, String hashKey) {
         redisUtils.hashSet(hashKey, map);
+    }
+
+    @Override
+    public String getUserSn(Long userId){
+        if (userId == null){
+            throw new CacheException(CacheMessage.ARGS_IS_NULL_OR_EMPTY);
+        }
+        String useridMapSnKey = properties.getUseridMapSnKey();
+        // 获取id-sn映射
+        Object seller = redisUtils.hashGet(useridMapSnKey, userId.toString());
+        if (seller == null){
+            return null;
+        }
+        return seller.toString();
+    }
+
+    // 检查缓存中是否存在NULL_VALUE标记 用于拦截重复无效不存在的sn的请求
+    private void checkNullValue(String key){
+        String result = redisUtils.ssGetValue(key);
+        if (result == null){
+            return;
+        }
+
+        if (result.equals(properties.getNULL_VALUE())) {
+            throw new CacheException(CacheMessage.NOT_EXIST_DATA);
+        }
     }
 
 }

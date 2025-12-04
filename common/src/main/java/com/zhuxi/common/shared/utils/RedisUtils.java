@@ -1,7 +1,7 @@
 package com.zhuxi.common.shared.utils;
 
 import com.zhuxi.common.shared.constant.CacheMessage;
-import com.zhuxi.common.shared.exception.CacheException;
+import com.zhuxi.common.shared.exception.cache.CacheException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.*;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -54,6 +54,28 @@ public class RedisUtils {
     }
 
     /**
+     * 设置RedisTemplate(string,string)中的值(无过期时间)
+     * @param key 键
+     * @param value 值
+     */
+    public void ssSetValueNoExpire(String key, String value){
+        ssValueOperations.set(key,value);
+    }
+
+    /**
+     * 缓存String类型(string,string)中的值（IfAbsent）
+     * @param key 键
+     * @param value 值
+     * @param expireTime 过期时间
+     * @param timeUnit 时间单位
+     * @param <T> 值类型
+     * @return 是否成功
+     */
+    public Boolean ssSetValueIfAbsent(String key, String value, long expireTime, TimeUnit timeUnit){
+        return ssValueOperations.setIfAbsent(key, value, expireTime, timeUnit);
+    }
+
+    /**
      * 获取redisTemplate(string,object)中的值
      * @param key 键
      * @return 值
@@ -72,6 +94,19 @@ public class RedisUtils {
      */
     public <T> void soSetExValue(String key, T value, long expireTime, TimeUnit timeUnit){
         soValueOperations.set(key,value, expireTime, timeUnit);
+    }
+
+    /**
+     * 缓存String类型(string,object)中的值（IfAbsent）
+     * @param key 键
+     * @param value 值
+     * @param expireTime 过期时间
+     * @param timeUnit 时间单位
+     * @param <T> 值类型
+     * @return 是否成功
+     */
+    public <T> Boolean soSetIfAbsent(String key, T value, long expireTime, TimeUnit timeUnit){
+        return soValueOperations.setIfAbsent(key, value, expireTime, timeUnit);
     }
 
     /**

@@ -2,7 +2,7 @@ package com.zhuxi.fileModule.infrastructure.repository;
 
 import com.zhuxi.common.shared.constant.BusinessMessage;
 import com.zhuxi.common.shared.constant.CommonMessage;
-import com.zhuxi.common.shared.exception.BusinessException;
+import com.zhuxi.common.shared.exception.business.BusinessException;
 import com.zhuxi.fileModule.domain.model.File;
 import com.zhuxi.fileModule.domain.repository.FileRepository;
 import com.zhuxi.fileModule.infrastructure.mapper.FileMapper;

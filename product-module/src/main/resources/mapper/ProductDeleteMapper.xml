@@ -1,0 +1,7 @@
+<!-- 为什么逻辑删除：幂等且保留历史，避免并发重复删除报错 -->
+<mapper namespace="com.zhuxi.product.module.infrastructure.mapper.ProductDeleteMapper">
+  <update id="logicDelete">
+    UPDATE sh_product SET deleted = 1, deleted_at = NOW()
+    WHERE id = #{id} AND deleted = 0
+  </update>
+</mapper>

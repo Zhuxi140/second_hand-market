@@ -2,7 +2,7 @@ package com.zhuxi.common.shared.utils;
 
 import com.zhuxi.common.shared.constant.AuthMessage;
 import com.zhuxi.common.shared.enums.Role;
-import com.zhuxi.common.shared.exception.TokenException;
+import com.zhuxi.common.shared.exception.safe.TokenException;
 import com.zhuxi.common.infrastructure.properties.JwtProperties;
 import com.zhuxi.common.interfaces.result.TokenResult;
 import io.jsonwebtoken.*;

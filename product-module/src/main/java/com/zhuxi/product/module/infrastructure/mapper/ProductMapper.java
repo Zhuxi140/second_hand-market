@@ -2,6 +2,7 @@ package com.zhuxi.product.module.infrastructure.mapper;
 
 import com.zhuxi.product.module.domain.model.Product;
 import com.zhuxi.product.module.domain.model.ProductStatic;
+import com.zhuxi.product.module.domain.objectValue.HostScore;
 import com.zhuxi.product.module.interfaces.param.ShProductParam;
 import com.zhuxi.product.module.interfaces.vo.*;
 import org.apache.ibatis.annotations.Delete;
@@ -87,5 +88,8 @@ public interface ProductMapper {
 
     @Select("SELECT userSn FROM user WHERE id = #{userId} ")
     String getUserSn(Long userId);
+
+    @Select("SELECT host_score FROM product WHERE id = #{productId} ")
+    HostScore getHostScore(Long productId);
 
 }
