@@ -7,11 +7,16 @@ import com.zhuxi.product.module.domain.model.Product;
 import com.zhuxi.product.module.domain.repository.ProductRepository;
 import com.zhuxi.product.module.domain.service.ProductCacheService;
 import com.zhuxi.product.module.interfaces.dto.UpdateProductDTO;
+import com.zhuxi.product.module.interfaces.vo.ProductDetailVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author zhuxi
@@ -91,4 +96,37 @@ public class UpdateProductProcess {
     public void save(Product product) {
         repository.save(product);
     }
+
+    @Async
+    public void asyncCache(String productSn){
+        long threadId = Thread.currentThread().getId();
+        Boolean lock = commonCache.getLock(properties.getShProductLockKey() + productSn, threadId, 30, TimeUnit.SECONDS);
+        if (!lock){
+            log.warn("getLock-failed,已经有线程在处理缓存,productSn:{}",productSn);
+            return;
+        }
+        try {
+            ProductDetailVO detail = repository.getShProductDetail(productSn, true);
+            boolean isHotData = checkHotData(detail.getHostScore());
+            // 具体实现
+
+        }finally {
+            try {
+                Object currentThreadId = commonCache.soGetValue(properties.getShProductLockKey() + productSn);
+                if (currentThreadId != null && currentThreadId.equals(threadId)) {
+                    commonCache.delKey(properties.getShProductLockKey() + productSn);
+                }
+            }catch (Exception e){
+                log.warn("释放锁异常-message:{}", e.getMessage());
+            }
+        }
+    }
+
+    private boolean checkHotData(BigDecimal hostScore){
+        if (hostScore == null){
+            return false;
+        }
+        return hostScore.compareTo(BigDecimal.valueOf(80)) >= 0;
+    }
+
 }

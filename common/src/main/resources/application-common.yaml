@@ -32,6 +32,7 @@ cache:
     condition-key: "product:condition"
     condition-lock-key: "product:lock:condition"
     sh-product-key: "product:shProduct:"
+    sh-product-lock-key: "product:lock:shProduct:"
     sh-product-expire: 1800 #秒
     me-product-key: "product:user:shProduct:"
     product-static-key: "product:static:"

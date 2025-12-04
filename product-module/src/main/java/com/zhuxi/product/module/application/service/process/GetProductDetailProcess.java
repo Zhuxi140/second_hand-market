@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author zhuxi
@@ -144,19 +145,24 @@ public class GetProductDetailProcess {
         String shProductKey = properties.getShProductKey() + productSn;
         String productStaticKey = properties.getProductStaticKey() + productSn;
         String userInfoKey = properties.getUserInfoKey() + vo.getSellerSn();
+        long threadId = Thread.currentThread().getId();
         try {
             // 缓存未命中product主体信息 缺失过多 直接删除整个key 重新缓存
+            Boolean lock = commonCache.getLock(properties.getShProductLockKey() + productSn, threadId, 30, TimeUnit.SECONDS);
+            if (!lock){
+                log.warn("getLock-failed,已经有线程在处理缓存回填,productSn:{}",productSn);
+                return;
+            }
             commonCache.delKey(shProductKey);
             Product product = repository.getProductForCache(vo.getId());
             product.addNames(vo.getCategoryName(), vo.getConditionName());
             cache.saveShProduct(product, productSn,isHostData);
 
-
-        if (needStatic) {
-            commonCache.delKey(productStaticKey);
-            List<ProductStatic> productStatics = repository.getProductStatics(vo.getId());
-            cache.saveProductStatic(productStatics, productSn,isHostData);
-        }
+            if (needStatic) {
+                commonCache.delKey(productStaticKey);
+                List<ProductStatic> productStatics = repository.getProductStatics(vo.getId());
+                cache.saveProductStatic(productStatics, productSn,isHostData);
+            }
 
             commonCache.hashFlushValue(
                     Map.of("nickName",vo.getSellerName(), "avatar", vo.getSellerAvatar()),
@@ -165,6 +171,15 @@ public class GetProductDetailProcess {
         } catch (Exception e) {
             log.error("异步回填缓存出错。productSn:{},needStatic:{},error_Info:{}",productSn,needStatic,e.getMessage());
             // 其他预警或重试处理
+        }finally {
+            try {
+                Object currentThreadId = commonCache.soGetValue(properties.getShProductLockKey() + productSn);
+                if (currentThreadId != null && currentThreadId.equals(threadId)) {
+                    commonCache.delKey(properties.getShProductLockKey() + productSn);
+                }
+            }catch (Exception e){
+                log.warn("释放锁异常-message:{}", e.getMessage());
+            }
         }
     }
 

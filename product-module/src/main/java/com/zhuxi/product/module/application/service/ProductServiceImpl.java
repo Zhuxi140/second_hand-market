@@ -152,7 +152,6 @@ public class ProductServiceImpl implements ProductService {
     public void updateProduct(UpdateProductDTO update, String userSn) {
         String productSn = update.getProductSn();
         // 获取商品id
-
         Long productId = updateProductProcess.getProductId(productSn);
 
         // 获取用户id
@@ -168,11 +167,7 @@ public class ProductServiceImpl implements ProductService {
         commonCache.delKey(properties.getShProductKey() + productSn);
 
         // 异步缓存
-        CompletableFuture.runAsync(()->{
-            ProductDetailVO detail = repository.getShProductDetail(productSn, true);
-            boolean isHotData = checkHotData(detail.getHostScore());
-            updateProductProcess.asyncCache(detail, isHotData);
-        });
+       updateProductProcess.asyncCache(productSn);
     }
 
     @Override
@@ -213,10 +208,4 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
-    private boolean checkHotData(BigDecimal hostScore){
-        if (hostScore == null){
-            return false;
-        }
-        return hostScore.compareTo(BigDecimal.valueOf(80)) >= 0;
-    }
 }

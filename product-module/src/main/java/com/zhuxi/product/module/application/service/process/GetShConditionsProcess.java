@@ -30,7 +30,7 @@ public class GetShConditionsProcess {
     private final CacheKeyProperties properties;
 
     public List<ConditionSHVO> getLock(List<ConditionSHVO> shConditions, Long threadId){
-        boolean lock = Boolean.TRUE.equals(commonCache.getLock(properties.getConditionKey(), threadId, 30, TimeUnit.SECONDS));
+        boolean lock = Boolean.TRUE.equals(commonCache.getLock(properties.getConditionLockKey(), threadId, 30, TimeUnit.SECONDS));
         if (!lock){
             try{
                 sleep(50);
