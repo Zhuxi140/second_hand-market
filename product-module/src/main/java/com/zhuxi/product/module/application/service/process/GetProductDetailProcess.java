@@ -15,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -40,6 +42,7 @@ public class GetProductDetailProcess {
      * @param productSn 商品编号
      * @return 商品详细信息
      */
+    @Transactional(readOnly = true,propagation = Propagation.SUPPORTS)
     public ProductDetailVO handleProductNotInCache(String productSn, List<ProductStatic> cachedStatics) {
         try {
             // 判断是否需要查询静态信息
@@ -94,6 +97,7 @@ public class GetProductDetailProcess {
      * @param productStatics 商品静态信息
      * @return 获取商品详细信息
      */
+    @Transactional(readOnly = true,propagation = Propagation.SUPPORTS)
     public ProductDetailVO handlerProductInCache(Product product, List<ProductStatic> productStatics){
 
         // 判断是否为热门数据
@@ -148,7 +152,7 @@ public class GetProductDetailProcess {
         long threadId = Thread.currentThread().getId();
         try {
             // 缓存未命中product主体信息 缺失过多 直接删除整个key 重新缓存
-            Boolean lock = commonCache.getLock(properties.getShProductLockKey() + productSn, threadId, 30, TimeUnit.SECONDS);
+            Boolean lock = commonCache.getLock(properties.getShProductLockKey() + productSn, String.valueOf(threadId), 30, TimeUnit.SECONDS);
             if (!lock){
                 log.warn("getLock-failed,已经有线程在处理缓存回填,productSn:{}",productSn);
                 return;
@@ -173,10 +177,7 @@ public class GetProductDetailProcess {
             // 其他预警或重试处理
         }finally {
             try {
-                Object currentThreadId = commonCache.soGetValue(properties.getShProductLockKey() + productSn);
-                if (currentThreadId != null && currentThreadId.equals(threadId)) {
-                    commonCache.delKey(properties.getShProductLockKey() + productSn);
-                }
+                commonCache.unLock(properties.getShProductLockKey() + productSn, String.valueOf(threadId));
             }catch (Exception e){
                 log.warn("释放锁异常-message:{}", e.getMessage());
             }

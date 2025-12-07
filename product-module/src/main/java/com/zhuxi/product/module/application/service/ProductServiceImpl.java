@@ -19,9 +19,15 @@ import com.zhuxi.product.module.interfaces.param.ShProductParam;
 import com.zhuxi.product.module.interfaces.vo.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
+import org.springframework.data.redis.core.script.RedisScript;
+import org.springframework.scripting.support.ResourceScriptSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -51,6 +57,9 @@ public class ProductServiceImpl implements ProductService {
     private final UpdateProductProcess updateProductProcess;
     private final GetCategoryProcess getCategoryProcess;
     private final GetShConditionsProcess getShConditionsProcess;
+    private final DelProductProcess delProductProcess;
+
+
 
     @Override
     public List<CategoryTreeVO> getCategoryList(int limit, int offset) {
@@ -68,8 +77,16 @@ public class ProductServiceImpl implements ProductService {
             return data;
         }
 
-        // 持锁线程查库并缓存
-        return getCategoryProcess.getDataByDb(threadId,limit, offset);
+        try {
+            // 持锁线程查库并缓存
+            return getCategoryProcess.getDataByDb(threadId, limit, offset);
+        }finally {
+            try {
+                commonCache.unLock(properties.getCategoryLockKey(), String.valueOf(threadId));
+            }catch (Exception e){
+                log.error("释放锁失败：error-message:{}",e.getMessage());
+            }
+        }
     }
 
     @Override
@@ -112,7 +129,15 @@ public class ProductServiceImpl implements ProductService {
             return data;
         }
 
-        return getShConditionsProcess.getDataByDB(shConditions, threadId);
+        try {
+            return getShConditionsProcess.getDataByDB(shConditions, threadId);
+        }finally {
+            try {
+                commonCache.unLock(properties.getConditionLockKey(), String.valueOf(threadId));
+            }catch (Exception e){
+                log.error("释放锁失败：error-message:{}",e.getMessage());
+            }
+        }
     }
 
     @Override
@@ -136,7 +161,6 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public ProductDetailVO getShProductDetail(String productSn) {
         LogicalCache<List<ProductStatic>> productStatics = cache.getProductStatics(productSn);
         Product product = cache.getDetailProductInfo(productSn);
@@ -148,7 +172,7 @@ public class ProductServiceImpl implements ProductService {
         return getProductDetailProcess.handlerProductInCache(product, productStatics.getData());
     }
 
-    @Override
+    @Override  //待完善缓存机制
     public void updateProduct(UpdateProductDTO update, String userSn) {
         String productSn = update.getProductSn();
         // 获取商品id
@@ -171,20 +195,23 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    @Transactional(rollbackFor = BusinessException.class)
     public void delProduct(String productSn) {
-
-        Long productId = cache.getProductId(productSn);
-        if (productId == null){
-            try {
-                productId = repository.getProductIdBySn(productSn);
-            }catch (BusinessException e){
-                log.error("del-product-error: {}",e.getMessage());
-                commonCache.saveNullValue(properties.getShProductKey() + productSn);
-                throw new BusinessException(BusinessMessage.DATA_EXCEPTION);
-            }
+        long threadId = Thread.currentThread().getId();
+        String lockKey= properties.getDelProductLockKey() + productSn;
+        Boolean lock = commonCache.getLock(lockKey, String.valueOf(threadId), 30, TimeUnit.SECONDS);
+        if (!lock){
+            throw new BusinessException(BusinessMessage.DELING_PRODUCT);
         }
-        repository.delProduct(productId);
+        try {
+            // 获取商品id
+            Long productId = delProductProcess.getProduct(productSn);
+            // 删除商品
+            delProductProcess.delProduct(productId, productSn);
+            // 缓存失效
+            delProductProcess.delCache(productSn);
+        }finally {
+            commonCache.unLock(lockKey, String.valueOf(threadId));
+        }
     }
 
     @Override

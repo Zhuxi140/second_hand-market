@@ -49,5 +49,7 @@ public class BusinessMessage {
     public static final String GET_PRODUCT_DETAIL_ERROR = "获取商品详细失败或不存在，请稍后重试或联系管理员";
     public static final String PRODUCT_ID_IS_NULL = "当前系统繁忙,情稍后重试或联系管理员";
     public static final String DEL_PRODUCT_ERROR = "删除商品失败，请稍后重试";
+    public static final String ALREADY_DEL_PRODUCT = "该商品已被删除";
+    public static final String DELING_PRODUCT = "该商品正在删除中，请勿重复操作";
 
 }

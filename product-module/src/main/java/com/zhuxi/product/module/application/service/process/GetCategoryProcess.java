@@ -59,7 +59,7 @@ public class GetCategoryProcess {
      * @return null: 获取到锁  data: 返回缓存数据 无论是否有数据
      */
     public List<CategoryTreeVO> getLock(long threadId){
-        boolean lock = Boolean.TRUE.equals(commonCache.getLock(properties.getCategoryLockKey(),threadId,30, TimeUnit.SECONDS));
+        boolean lock = Boolean.TRUE.equals(commonCache.getLock(properties.getCategoryLockKey(),String.valueOf(threadId),30, TimeUnit.SECONDS));
         if (!lock){
                 try {
                     sleep(50);
@@ -94,15 +94,6 @@ public class GetCategoryProcess {
         }catch (Exception e){
             log.error("未知错误-message:{}",e.getMessage());
             return List.of();
-        } finally {
-            try {
-                Object value = commonCache.soGetValue(properties.getCategoryLockKey());
-                if (value != null && value.equals(threadId)) {
-                    commonCache.delKey(properties.getCategoryLockKey());
-                }
-            }catch (Exception e){
-                log.warn("释放锁异常-message:{}",e.getMessage());
-            }
         }
         return buildTree(list);
     }

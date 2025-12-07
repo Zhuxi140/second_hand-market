@@ -68,7 +68,6 @@ public class RedisUtils {
      * @param value 值
      * @param expireTime 过期时间
      * @param timeUnit 时间单位
-     * @param <T> 值类型
      * @return 是否成功
      */
     public Boolean ssSetValueIfAbsent(String key, String value, long expireTime, TimeUnit timeUnit){
@@ -136,6 +135,17 @@ public class RedisUtils {
      */
     public Object hashGet(String hashKey, String key){
         return hashOperations.get(hashKey, key);
+    }
+
+
+    /**
+     * 删除HashRedisTemplate(String,String,object)中的具体key字段对应的值
+     * @param hashKey 键
+     * @param field 字段
+     * @return 删除结果(1:删除成功 0:删除失败)
+     */
+    public long delHashField(String hashKey, String field){
+        return hashOperations.delete(hashKey, field);
     }
 
     /**

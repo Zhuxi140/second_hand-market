@@ -7,8 +7,13 @@ import com.zhuxi.common.shared.exception.cache.CacheException;
 import com.zhuxi.common.shared.utils.RedisUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
+import org.springframework.data.redis.core.script.RedisScript;
+import org.springframework.scripting.support.ResourceScriptSource;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -16,11 +21,21 @@ import java.util.concurrent.TimeUnit;
  * @author zhuxi
  */
 @Service
-@RequiredArgsConstructor
 @Slf4j(topic = "CommonCacheServiceImpl")
 public class CommonCacheServiceImpl implements CommonCacheService {
     private final CacheKeyProperties properties;
     private final RedisUtils redisUtils;
+    private final DefaultRedisScript<Integer> unLockScript;
+
+    public CommonCacheServiceImpl(CacheKeyProperties properties, RedisUtils redisUtils) {
+        this.properties = properties;
+        this.redisUtils = redisUtils;
+        this.unLockScript = new DefaultRedisScript<>();
+        ClassPathResource classPathResource = new ClassPathResource("lua/unLock.lua");
+        ResourceScriptSource scriptSource = new ResourceScriptSource(classPathResource);
+        unLockScript.setScriptSource(scriptSource);
+                unLockScript.setResultType(Integer.class);
+    }
 
     @Override
     public Long getUserIdBySn(String userSn) {
@@ -71,8 +86,18 @@ public class CommonCacheServiceImpl implements CommonCacheService {
     }
 
     @Override
-    public Boolean getLock(String key, Object value, long timeout, TimeUnit unit) {
-        return redisUtils.soSetIfAbsent(key, value, timeout, unit);
+    public Boolean getLock(String key, String value, long timeout, TimeUnit unit) {
+        return redisUtils.ssSetValueIfAbsent(key, value, timeout, unit);
+    }
+
+    @Override
+    public Boolean unLock(String key, String threadId) {
+        Object result = redisUtils.executeLuaScript(
+                unLockScript,
+                List.of(key),
+                List.of(threadId)
+        );
+        return (Integer) result == 1;
     }
 
     @Override
@@ -81,6 +106,11 @@ public class CommonCacheServiceImpl implements CommonCacheService {
         if (!b){
             throw new CacheException(CacheMessage.DEL_KEY_ERROR);
         }
+    }
+
+    @Override
+    public void delHashField(String hashKey, String field) {
+        long result = redisUtils.delHashField(hashKey, field);
     }
 
     @Override

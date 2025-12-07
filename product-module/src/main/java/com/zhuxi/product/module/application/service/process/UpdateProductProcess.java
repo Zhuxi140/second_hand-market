@@ -100,7 +100,7 @@ public class UpdateProductProcess {
     @Async
     public void asyncCache(String productSn){
         long threadId = Thread.currentThread().getId();
-        Boolean lock = commonCache.getLock(properties.getShProductLockKey() + productSn, threadId, 30, TimeUnit.SECONDS);
+        Boolean lock = commonCache.getLock(properties.getShProductLockKey() + productSn, String.valueOf(threadId), 30, TimeUnit.SECONDS);
         if (!lock){
             log.warn("getLock-failed,已经有线程在处理缓存,productSn:{}",productSn);
             return;
@@ -108,14 +108,11 @@ public class UpdateProductProcess {
         try {
             ProductDetailVO detail = repository.getShProductDetail(productSn, true);
             boolean isHotData = checkHotData(detail.getHostScore());
-            // 具体实现
+            // cache具体实现
 
         }finally {
             try {
-                Object currentThreadId = commonCache.soGetValue(properties.getShProductLockKey() + productSn);
-                if (currentThreadId != null && currentThreadId.equals(threadId)) {
-                    commonCache.delKey(properties.getShProductLockKey() + productSn);
-                }
+               commonCache.unLock(properties.getShProductLockKey() + productSn, String.valueOf(threadId));
             }catch (Exception e){
                 log.warn("释放锁异常-message:{}", e.getMessage());
             }

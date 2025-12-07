@@ -30,7 +30,7 @@ public class GetShConditionsProcess {
     private final CacheKeyProperties properties;
 
     public List<ConditionSHVO> getLock(List<ConditionSHVO> shConditions, Long threadId){
-        boolean lock = Boolean.TRUE.equals(commonCache.getLock(properties.getConditionLockKey(), threadId, 30, TimeUnit.SECONDS));
+        boolean lock = Boolean.TRUE.equals(commonCache.getLock(properties.getConditionLockKey(), String.valueOf(threadId), 30, TimeUnit.SECONDS));
         if (!lock){
             try{
                 sleep(50);
@@ -54,15 +54,6 @@ public class GetShConditionsProcess {
             commonCache.saveNullValue(properties.getConditionKey());
             log.error("获取商品成色列表失败：error：查库获取数据为null,exception_message:{}.condition-key:{}", e.getMessage(), properties.getConditionKey());
             return List.of();
-        } finally {
-            try {
-                Object currentLock = commonCache.soGetValue(properties.getConditionLockKey());
-                if (currentLock != null && currentLock.equals(threadId)) {
-                    commonCache.delKey(properties.getConditionLockKey());
-                }
-            } catch (Exception e) {
-                log.warn("释放锁异常-message:{}", e.getMessage());
-            }
         }
         return shConditions;
     }

@@ -24,11 +24,11 @@ product-module
    - 问题：主体信息未命中直接查库，productStatics 可能也是空；查库后未明确回填缓存（过程类里若没写就彻底不一致）；没有负缓存导致穿透；异常时统一错误码但无诊断信息。
    - 更好的做法：Cache-Aside：查库成功立即写回缓存（含 TTL/逻辑过期），查库为空写负缓存；product 与 statics 分 key 管理；对“下架/删除”增加缓存失效广播。
 
-6) updateProduct
+6) updateProduct (已处理)
    - 问题：只写库，不做缓存失效；列表页、详情页、静态属性全可能脏读。
    - 更好的做法：事务提交后（TransactionSynchronization.afterCommit）统一失效与重建：detail、statics、list、聚合统计缓存；使用事件总线/MQ（Kafka/RabbitMQ）广播变更，异步重建热点缓存。
 
-7) delProduct
+7) delProduct (已处理)
    - 问题：获取 productId 失败就 saveNullValue(shProductKey+productSn) 但只处理一个 key；删除只操作库，不做缓存清理；没有幂等与防并发重复删除。
    - 更好的做法：先校验存在性（BloomFilter + Sn->Id 缓存）；库删除成功后：失效所有相关缓存（详情、静态、用户发布列表、分类聚合），发布删除事件做最终一致性；幂等删除（逻辑删除标识），防二次操作。
 
@@ -40,7 +40,7 @@ product-module
    - 问题：CacheKeyProperties 有 NULL_VALUE 但各处未统一使用；Key 拼接分散，过期策略不一致。
    - 更好的做法：统一 CacheKey 工具，所有 key 生成、负缓存标记、TTL 策略集中管理；强制约束模块的缓存生命周期。
 
-10) 类型处理器配置错误
+10) 类型处理器配置错误 (已解决)
    - 问题：application-product.yaml 写成 com.zhuxi.productModule.infrastructure.typehandler，实际包是 com.zhuxi.product.module.infrastructure.typehandler。类型处理器不生效，隐性 Bug。
    - 更好的做法：修正为 com.zhuxi.product.module.infrastructure.typehandler，并在启动日志校验扫描结果。
 

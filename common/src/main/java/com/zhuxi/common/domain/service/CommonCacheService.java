@@ -62,7 +62,15 @@ public interface CommonCacheService {
      * @param unit 时间单位
      * @return true:获取锁成功 false:获取锁失败
      */
-    Boolean getLock(String key,Object value, long timeout, TimeUnit unit);
+    Boolean getLock(String key,String value, long timeout, TimeUnit unit);
+
+    /**
+     * 释放锁
+     * @param key 缓存key
+     * @param threadId 线程id
+     * @return true:释放锁成功 false:释放锁失败
+     */
+    Boolean unLock(String key,String threadId);
 
 
     /**
@@ -70,6 +78,13 @@ public interface CommonCacheService {
      * @param key 缓存key
      */
     void delKey(String key);
+
+    /**
+     * 删除hash类型中单个字段
+     * @param hashKey 键名key
+     * @param field 字段
+     */
+    void delHashField(String hashKey, String field);
 
     /**
      * 更新缺失的缓存(hash类型)
