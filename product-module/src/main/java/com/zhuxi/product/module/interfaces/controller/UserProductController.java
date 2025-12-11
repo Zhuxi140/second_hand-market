@@ -2,6 +2,9 @@ package com.zhuxi.product.module.interfaces.controller;
 
 import com.zhuxi.product.module.domain.service.ProductService;
 import com.zhuxi.product.module.interfaces.dto.PublishSHDTO;
+import com.zhuxi.common.interfaces.result.Result;
+import com.zhuxi.common.shared.annotation.PermissionCheck;
+import com.zhuxi.common.shared.enums.Role;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -29,5 +32,17 @@ public class UserProductController {
     })
     public String publish(@RequestBody PublishSHDTO sh, @RequestParam String userSn){
         return productService.publishSh(sh, userSn);
+    }
+
+    @PostMapping("/{userSn}/products")
+    @Operation(summary = "发布二手商品", description = "发布二手商品")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "发布成功"),
+            @ApiResponse(responseCode = "500", description = "发布失败")
+    })
+    @PermissionCheck(Role = Role.user, permission = "user:publishProduct", enableDataOwnership = true)
+    public Result<String> publishProduct(@RequestBody PublishSHDTO sh, @PathVariable String userSn){
+        String sn = productService.publishSh(sh, userSn);
+        return Result.success(sn);
     }
 }

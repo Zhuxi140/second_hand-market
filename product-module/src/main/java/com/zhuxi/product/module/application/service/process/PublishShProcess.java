@@ -5,7 +5,7 @@ import com.zhuxi.common.shared.exception.business.BusinessException;
 import com.zhuxi.product.module.domain.enums.IsDraft;
 import com.zhuxi.product.module.domain.model.Product;
 import com.zhuxi.product.module.domain.model.ProductStatic;
-import com.zhuxi.product.module.domain.repository.ProductRepository;
+import com.zhuxi.product.module.domain.service.ProductRepository;
 import com.zhuxi.product.module.domain.service.ProductCacheService;
 import com.zhuxi.product.module.interfaces.dto.PublishSHDTO;
 import lombok.RequiredArgsConstructor;

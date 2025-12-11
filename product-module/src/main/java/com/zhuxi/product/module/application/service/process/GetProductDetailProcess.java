@@ -7,7 +7,7 @@ import com.zhuxi.common.shared.exception.business.BusinessException;
 import com.zhuxi.product.module.application.assembler.ToProductDetailVO;
 import com.zhuxi.product.module.domain.model.Product;
 import com.zhuxi.product.module.domain.model.ProductStatic;
-import com.zhuxi.product.module.domain.repository.ProductRepository;
+import com.zhuxi.product.module.domain.service.ProductRepository;
 import com.zhuxi.product.module.domain.service.ProductCacheService;
 import com.zhuxi.product.module.interfaces.vo.ProductDetailVO;
 import com.zhuxi.product.module.interfaces.vo.ProductImage;

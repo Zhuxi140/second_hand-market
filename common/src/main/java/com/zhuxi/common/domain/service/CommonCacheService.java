@@ -92,4 +92,13 @@ public interface CommonCacheService {
      * @param hashKey 键名key
      */
     void hashFlushValue(Map<String,Object> map, String hashKey);
+
+
+    /**
+     * 获取hash类型中单个字段的值
+     * @param hashKey 键名key
+     * @param field 字段
+     * @return 值
+     */
+    Object getHashOneValue(String hashKey, String field);
 }

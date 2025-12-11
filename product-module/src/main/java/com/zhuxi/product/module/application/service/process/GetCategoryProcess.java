@@ -4,7 +4,7 @@ import com.zhuxi.common.applicaiton.cache.CommonCacheServiceImpl;
 import com.zhuxi.common.infrastructure.properties.CacheKeyProperties;
 import com.zhuxi.common.shared.exception.business.BusinessException;
 import com.zhuxi.common.shared.exception.cache.ValueNullException;
-import com.zhuxi.product.module.domain.repository.ProductRepository;
+import com.zhuxi.product.module.domain.service.ProductRepository;
 import com.zhuxi.product.module.domain.service.ProductCacheService;
 import com.zhuxi.product.module.interfaces.vo.CategoryTreeVO;
 import com.zhuxi.product.module.interfaces.vo.CategoryVO;

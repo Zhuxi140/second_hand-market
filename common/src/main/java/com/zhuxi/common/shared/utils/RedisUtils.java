@@ -128,13 +128,13 @@ public class RedisUtils {
     }
 
     /**
-     * 获取HashRedisTemplate(String,String,object)中的具体key字段对应的值
+     * 获取Hash类型(String,String,object)中的字段对应的值
      * @param hashKey 键
-     * @param key 值
+     * @param field 字段
      * @return 值
      */
-    public Object hashGet(String hashKey, String key){
-        return hashOperations.get(hashKey, key);
+    public Object hashGet(String hashKey, String field){
+        return hashOperations.get(hashKey, field);
     }
 
 

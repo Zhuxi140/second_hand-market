@@ -6,7 +6,7 @@ import com.zhuxi.common.shared.exception.business.BusinessException;
 import com.zhuxi.product.module.domain.model.Product;
 import com.zhuxi.product.module.domain.model.ProductStatic;
 import com.zhuxi.product.module.domain.objectValue.HostScore;
-import com.zhuxi.product.module.domain.repository.ProductRepository;
+import com.zhuxi.product.module.domain.service.ProductRepository;
 import com.zhuxi.product.module.infrastructure.mapper.ProductMapper;
 import com.zhuxi.product.module.interfaces.param.ShProductParam;
 import com.zhuxi.product.module.interfaces.vo.*;

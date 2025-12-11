@@ -119,6 +119,11 @@ public class CommonCacheServiceImpl implements CommonCacheService {
     }
 
     @Override
+    public Object getHashOneValue(String hashKey, String field) {
+        return redisUtils.hashGet(hashKey, field);
+    }
+
+    @Override
     public String getUserSn(Long userId){
         if (userId == null){
             throw new CacheException(CacheMessage.ARGS_IS_NULL_OR_EMPTY);

@@ -1,4 +1,4 @@
-package com.zhuxi.product.module.domain.repository;
+package com.zhuxi.product.module.domain.service;
 
 import com.zhuxi.product.module.domain.model.Product;
 import com.zhuxi.product.module.domain.model.ProductStatic;
@@ -6,7 +6,6 @@ import com.zhuxi.product.module.domain.objectValue.HostScore;
 import com.zhuxi.product.module.interfaces.param.ShProductParam;
 import com.zhuxi.product.module.interfaces.vo.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 /**

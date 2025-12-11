@@ -4,7 +4,7 @@ import com.zhuxi.common.domain.service.CommonCacheService;
 import com.zhuxi.common.infrastructure.properties.CacheKeyProperties;
 import com.zhuxi.common.shared.constant.BusinessMessage;
 import com.zhuxi.common.shared.exception.business.BusinessException;
-import com.zhuxi.product.module.domain.repository.ProductRepository;
+import com.zhuxi.product.module.domain.service.ProductRepository;
 import com.zhuxi.product.module.domain.service.ProductCacheService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

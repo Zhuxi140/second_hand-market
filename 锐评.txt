@@ -70,11 +70,11 @@ user-module
    - 更好的做法：JWT 载荷最小化；加 jti、token version；后端校验版本与黑名单。
 
 file-module（COSController）
-1) 注入实现类
+1) 注入实现类    (解决)
    - 问题：直接注入 FileServiceImpl，强耦合。
    - 更好的做法：面向接口注入 FileService，便于替换存储后端。
 
-2) 权限缺失
+2) 权限缺失    (解决)
    - 问题：上传/查看接口无权限校验，任意获取预签名 URL。
    - 更好的做法：用户登录态 + 资源授权校验；查看签名必须验证资源归属或公开权限。
 

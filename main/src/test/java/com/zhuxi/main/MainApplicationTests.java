@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 @SpringBootTest
 class MainApplicationTests {
 
@@ -16,6 +18,8 @@ class MainApplicationTests {
 
     @Test
     void contextLoads() {
+        ConcurrentHashMap<Object, Object> d = new ConcurrentHashMap<>();
+
     }
 
 

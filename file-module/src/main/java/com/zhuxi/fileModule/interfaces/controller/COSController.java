@@ -1,6 +1,9 @@
 package com.zhuxi.fileModule.interfaces.controller;
 
 import com.zhuxi.common.interfaces.result.Result;
+import com.zhuxi.common.shared.annotation.PermissionCheck;
+import com.zhuxi.common.shared.enums.Role;
+import com.zhuxi.fileModule.domain.service.FileService;
 import com.zhuxi.fileModule.interfaces.dto.ConfirmDTO;
 import com.zhuxi.fileModule.interfaces.dto.UploadDTO;
 import com.zhuxi.fileModule.application.service.FileServiceImpl;
@@ -28,8 +31,7 @@ import java.net.URL;
 @Tag(name = "COS管理")
 public class COSController {
 
-    private final FileServiceImpl fileServiceImpl;
-
+    private final FileService fileService;
 
     @Operation(summary = "获取上传凭证",description = "获取预签名URL")
     @ApiResponses(value = {
@@ -37,8 +39,9 @@ public class COSController {
             @ApiResponse(responseCode = "500", description = "失败，可能原因: 文件类型错误 不支持该文件类型 文件过大等")
     })
     @PostMapping("/upload")
+    @PermissionCheck(Role = Role.user,permission = "file:upload",logic = PermissionCheck.Logic.OR)
     public Result<URL> upload(@Validated @RequestBody UploadDTO upload) {
-        URL url = fileServiceImpl.uploadFile(upload);
+        URL url = fileService.uploadFile(upload);
         if (url != null){
             return Result.success(url);
         }
@@ -51,8 +54,9 @@ public class COSController {
             @ApiResponse(responseCode = "500", description = "失败，可能原因: 文件类型错误 不支持该文件类型 数据异常等")
     })
     @PostMapping("/confirm")
+    @PermissionCheck(Role = Role.user,permission = "file:upload",logic = PermissionCheck.Logic.OR)
     public Result<String> confirm(@Validated @RequestBody ConfirmDTO confirm) {
-        fileServiceImpl.confirmFile(confirm);
+        fileService.confirmFile(confirm);
         return Result.success();
     }
 
@@ -62,8 +66,9 @@ public class COSController {
             @ApiResponse(responseCode = "500", description = "失败，可能原因: 文件类型错误 不支持该文件类型 权限不足 数据异常等")
     })
     @PostMapping("/view")
+    @PermissionCheck(Role = Role.user,permission = "file:upload",logic = PermissionCheck.Logic.OR)
     public Result<ViewVO> view(@Validated @RequestBody ViewDTO view) {
-        ViewVO viewVO = fileServiceImpl.getViewUrl(view);
+        ViewVO viewVO = fileService.getViewUrl(view);
         if (viewVO != null){
             return Result.success(viewVO);
         }

@@ -52,4 +52,12 @@ public class BusinessMessage {
     public static final String ALREADY_DEL_PRODUCT = "该商品已被删除";
     public static final String DELING_PRODUCT = "该商品正在删除中，请勿重复操作";
 
+
+    // -----------订单类-------------------------
+    public static final String CREATE_ORDER_ERROR = "创建订单失败,请稍后重试";
+    public static final String ORDER_NOT_EXIST = "订单不存在";
+    public static final String ORDER_STATUS_ERROR = "订单状态异常,请稍后刷新重试";
+    public static final String UPDATE_ORDER_STATUS_ERROR = "更新订单状态失败,请稍后重试";
+    public static final String CANCEL_ORDER_ERROR = "取消订单失败,请稍后重试";
+
 }
